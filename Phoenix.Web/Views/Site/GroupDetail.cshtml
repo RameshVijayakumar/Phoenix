@@ -1,0 +1,18 @@
+﻿@model Phoenix.Web.Models.GroupModel
+
+  <div class="k-edit-label">
+        @Html.LabelFor(m => m.GroupName)
+    </div>       
+    <div data-container-for="GroupName" class="k-edit-field">
+        @Html.TextBoxFor(m => m.GroupName, new { Class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12"})
+        @Html.ValidationMessageFor(m => m.GroupName)
+    </div>
+
+     <div class="k-edit-label">
+        @Html.LabelFor(m => m.GroupType)
+    </div>        
+  <div data-container-for="GroupType" class="k-edit-field">
+        @Html.TextBoxFor(m => m.GroupType, new { Class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12 k-state-disabled", disabled = "disabled" })
+  </div>       
+         
+			                

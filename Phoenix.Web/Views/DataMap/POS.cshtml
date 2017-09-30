@@ -1,0 +1,94 @@
+﻿@{
+	ViewBag.Title = "POS Item Mapping";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container">
+
+	@Html.Partial("_PageHeader", (string)ViewBag.Title)
+
+	<div class="row">
+		<div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+			<!--Sidebar content-->
+			<h5>Sites</h5>
+			<div id="tvNetObjects" style="overflow-y: auto; font-size: 75%;"  class="resizable-tree"></div>
+			<input type="hidden" id="inpSelectedNetObjId" value="0">
+		</div>
+		<div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+			<!--Body content-->
+			<div class="row">
+				<div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+					<h5 class="pull-left" style="margin-top: 5px">Menu</h5>&nbsp;&nbsp;&nbsp;
+					<input style="width: 400px;" id="menuSelection" /></div>
+				@*<div class="col-xs-6">
+						<div class="pull-right">
+							@if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+							{
+								<a class="btn btn-default btn-xs" id="btnViewODS" href="/datamap/odsposdetails">POS Item Detail</a>
+							}
+							&nbsp;&nbsp;
+						</div>
+
+				</div>*@
+			</div>
+			<div class="row">
+				<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+				@Html.Partial("_ItemTabGroup")
+					</div>
+			</div>
+		</div>
+	</div>
+</div>	
+
+<div id="windowAutoMapAllSites" class="k-content" style="display:none;">
+<h5>Auto Map</h5>
+			<div class="well">
+				<button id='AutoMapClear' type="button" class="btn btn-small pull-right">Clear</button>
+				<button id='AutoMap' type="submit" class="btn">Auto Map All Sites</button>
+				<br />
+				<br />
+				<div class="progress progress-striped active">
+				  <div class="bar" id="mapProgressBar"></div>
+				</div>
+				<div id="mapProgressMsg" style="max-height: 350px;padding: 15px;overflow-y: auto;"></div>
+			</div>
+</div>
+@*@Html.Partial("_NetworkObjectWindow")*@
+
+<div id="windowPOSDataMap" class="k-content" style="display:none;">
+    <div id="posDataMapHeader"></div>
+    <div id="gridPOSData" style="font-size: 75%"></div>
+    <br />
+    <div class="form-actions">
+        Currently Mapped PLU&nbsp;<span class="label label-default" id="lblPOSDataName">none</span>
+        Selected PLU&nbsp;<span class="label label-info" id="lblOPSPOSDataName">none</span>
+        <br />
+        <br />
+        <input type="hidden" id="inpItemId" value="0">
+        <input type="hidden" id="inpOPSPOSDataId" value="0">
+        <button type="button" class="btn btn-default btn-primary" id="btnPOSDataSelOK">Map selected item</button>
+        <button type="button" class="btn btn-default" id="btnPOSDataSelCancel">Cancel</button>
+    </div>
+</div>
+
+<div id="windowAutoMapBySite" class="k-content" style="display:none;">
+    <div id="tvAutoMapNetObjects" style="height: 430px;"></div>
+    <br />
+    <div class="form-actions">
+        Site To Map&nbsp;<span class="label label-default" id="lblAutoMapNetObjName">none</span>
+        Reference Site&nbsp;<span class="label label-info" id="lblAutoMapSelNetObjName">none</span><br />
+        <br />
+        <input type="hidden" id="inpAutoMapSelNetObjId" value="0">
+        <button type="button" class="btn btn-default btn-primary" id="btnAutoMapBySite">Auto Map</button>
+        <button type="button" class="btn btn-default" id="btnAutoMapBySiteClose">Close</button><br />
+        <br />
+        <div id="autoMapBySiteStatus"></div>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/treeviewcontrol")	
+    @Scripts.Render("~/bundles/posmap")
+
+}

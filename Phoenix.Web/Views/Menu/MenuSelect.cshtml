@@ -1,0 +1,451 @@
+﻿@model Phoenix.Web.Models.MenuDataModel
+@{
+    ViewBag.Title = "Menu Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Hidden("MenuNames", (string)ViewBag.MenuNames)
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <h4>Menu Select</h4>
+            <!--Sidebar content-->
+            <div id="treeview" style="font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <!--Body content-->
+            <br />
+            <br />
+            <div id="gridMenu" style="font-size: 75%;" class="resizable-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div id="divDump"></div>
+
+
+@section scripts{
+    @Scripts.Render("~/bundles/tagcommon")
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/menuselect")
+
+    <script id="popup_editor" type="text/x-kendo-template">
+    <div class="k-edit-label">
+        <label for="InternalName">Name</label>
+    </div>
+    <div data-container-for="InternalName" class="k-edit-field">
+        <input type="text" class="k-input k-textbox" name="InternalName" required="required" data-bind="value:InternalName" data-unique-msg="Menu Name should be Unique">
+        @Html.ValidationMessageFor(m => m.InternalName)
+    </div>
+
+    <div class="k-edit-label">
+        <label for="Description">Description</label>
+    </div>
+    <div data-container-for="Description" class="k-edit-field" style="margin-bottom:5px;">
+        <textarea rows="4" cols="150" class="k-input k-textbox col-xs-9 col-sm-9 col-md-9 col-lg-9" name="Description" data-bind="value:Description"></textarea>
+        @Html.ValidationMessageFor(m => m.Description)
+    </div>
+
+    <div class="k-edit-label">
+        <label for="Description">Channel(s)</label>
+    </div>
+        <div data-container-for="ChannelIdList" class="k-edit-field">
+            <select multiple='multiple' data-placeholder="Select Channels..." data-bind='value:Channels' id="Channels" class="k-input" style="width:400px;" name="Channels" />
+            @Html.ValidationMessageFor(m => m.ChannelIdList)
+        </div>
+</script>
+    <script type="text/kendo-template" id="message">
+    <div class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error" style="margin: 0.5em; display: block; " data-for="#=field#" data-valmsg-for="#=field#" id="#=field#_validationMessage">
+            <span class="k-icon k-warning"> </span>#=message#<div class="k-callout k-callout-n"></div></div>
+    </script>
+    <script>
+    var validationMessageTmpl = kendo.template($("#message").html());
+    var inlineDefault;
+    var selectedId = 0;
+    var selectedNodeType = 0;
+    var _IsActionMenuCopy = false;
+    _expansionSequence = sessionStorage.ExpansionSequence_Menu != undefined && sessionStorage.ExpansionSequence_Menu != "" ? sessionStorage.ExpansionSequence_Menu.split(',') : new Array();
+    _initialExpansionAfterSelectionItemType = _initialExpansionItemType = highestNetworkLevelAccess != undefined && highestNetworkLevelAccess != "" ? parseInt(highestNetworkLevelAccess) : NetworkObjectType.Brand; //This is the @@Model.ItemType
+
+    $(function () {
+
+        highlightMenubar("menu");
+
+        var _root = new kendo.data.HierarchicalDataSource({
+            transport: {
+                read: {
+                    cache: false,
+                    url: "/site/networkObjectTreeView",
+                    dataType: "json",
+                    data: { 'breakcache': new Date().getTime(), 'includeaccess': true, 'networkObjectType': _initialExpansionItemType }
+                }
+            },
+            schema: {
+                model: {
+                    id: "Id",
+                    hasChildren: "HasChildren",
+                    expanded: "expanded",
+                    parentId: "parentId"
+                }
+            }
+        });
+
+        // $("#divDump").html(ko.toJSON(inlineDefault));
+        $("#treeview").kendoTreeView({
+            dataSource: _root,
+            dataImageUrlField: "Image",
+            dataTextField: "Name",
+            loadOnDemand: true, //do NOT recurse with databound to expand nodes
+            dataBound: function (e) {
+                handleTreeDataBound(e);
+            },
+            select: function (e) {
+                handleTreeNodeSelection(e.node);
+            }
+        });
+
+
+        treeViewCtrl = $("#treeview").data("kendoTreeView");
+
+        function showMessage(container, name, errors) {
+            //add the validation message to the form
+            container.find("[data-valmsg-for=" + name + "]")
+                .replaceWith($(validationMessageTmpl({ field: name, message: errors[0] })))
+        }
+
+        var _validatedErrors = false;
+        var _OperationCompleteWithoutError = true;
+        var _gridOperation = "read";
+        $("#gridMenu").kendoGrid({
+            cancel: function (e) {
+                var grid = this;
+                var editeduid = e.model.uid;
+
+                var events = e.model._events;
+                var handlerToUnbind = events.change[events.change.length - 1];
+                e.model.unbind("change", handlerToUnbind);
+
+                _IsActionMenuCopy = false;
+
+                setTimeout(function () {
+                    var row = grid.table.find("tr[data-uid=" + editeduid + "]");
+                    var model = grid.dataItem(row);
+                    if (e.model.IsMenuOverriden === false) {
+                        row.find(".k-grid-revert").hide();
+                    }
+                    if (_IsActionMenuCopy) {
+                        row.find(".k-grid-customD").addClass("k-state-disabled");
+                    }
+                    if (e.model.IsDeletable == false) {
+                        row.find(".k-grid-customD").addClass("k-state-disabled");
+                    }
+                });
+            },
+            edit: function (e) {
+                if (e.model.isNew()) {
+                    e.container.data("kendoWindow").title("Create Menu");
+                }
+                else {
+                    if (_IsActionMenuCopy) {
+                        e.model.dirty = true;
+                        e.model.set("InternalName", e.model.InternalName + "-Copy");
+                        e.container.data("kendoWindow").title("Copy Menu");
+                    }
+                    else {
+                        e.container.data("kendoWindow").title("Edit Menu");
+                    }
+                }
+                window.setTimeout(function () {
+                    $(".k-edit-form-container").parent().width(700).height(260).data("kendoWindow").center();
+                }, 50);
+
+                //$(".k-grid-cancel").on("click", function () {
+                //    setTimeout(function () {
+                //        $("#gridMenu").data("kendoGrid").trigger("dataBound");
+                //    });
+                //})
+
+                var grid = this;
+                if (e.model.IsMenuOverriden === false) {
+                    e.model.bind("change", function () {
+                        var row = grid.table.find("tr[data-uid=" + e.model.uid + "]");
+                        row.find(".k-grid-revert").hide();
+                    });
+                }
+                if (_IsActionMenuCopy == false && e.model.IsEditable === false) {
+                    $('[name="InternalName"]').attr("readonly", "readonly");
+                    $('[name="InternalName"]').addClass("k-state-disabled");
+
+                    $('[name="Description"]').attr("readonly", "readonly");
+                    $('[name="Description"]').addClass("k-state-disabled");
+                }
+
+                e.container.data('kendoWindow').bind('activate', function (activeargs) {
+                    if (e.model.IsEditable === true) {
+                        $('[name="InternalName"]').select();
+                    }
+                });
+
+                initChannelmultiselect($('[name="Channels"]'), e.model.MenuId, e.model.isNew(), TagEntities.Menu);
+            },
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        cache: false,
+                        url: "/Menu/GetMenuList",
+                        data: { 'netId': selectedId, 'breakcache': new Date().getTime() },
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8"
+                    },
+                    create: {
+                        url: "/Menu/CreateMenu",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    update: {
+                        url: "/Menu/UpdateMenu",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    parameterMap: function (model, operation) {
+                        _gridOperation = operation;
+                        _validatedErrors = false;
+                        _OperationCompleteWithoutError = true;
+                        if (operation !== "read") {
+                            var result = {};
+
+                            var product = model;
+
+                            for (var member in product) {
+                                if (member == "NetworkObjectId") {
+                                    //if (operation == "create" || (operation == "update" && _IsActionMenuCopy)) {
+                                        result[member] = selectedId;
+                                    //}
+                                    //else {
+                                       // result[member] = product[member];
+                                    //}
+                                }
+                                else if (member == "IsActionMenuCopy") {
+                                    if (operation == "update" && _IsActionMenuCopy) {
+                                        result[member] = true;
+                                    }
+                                    else {
+                                        result[member] = false;
+                                    }
+                                }
+                                else if (member == "ChannelIdList") {
+                                    var channels = product["Channels"];
+                                    if (channels != undefined) {
+                                        var channelIds = new Array();
+                                        $.each(channels, function (idx, obj) {
+                                            channelIds.push(obj.TagId);
+                                        });
+                                        result[member] = channelIds.join(',');
+                                    }
+                                    else
+                                    {
+                                        result[member] = product[member];
+                                    }
+                                }
+                                else {
+                                    result[member] = product[member];
+                                }
+                            }
+                            return result;
+                        }
+                        else {
+                            return model
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+                schema: {
+                    errors: "Errors",
+                    //parse: function (data) {
+                    //    var res = [];
+                    //    if (data.Errors != undefined) {
+                    //        return data;
+                    //    }
+                    //    else
+                    //        {
+                    //    $.each(data, function (idx, elem) {
+                    //            res.push({
+                    //                MenuId: elem.MenuId,
+                    //                NetworkObjectId: elem.NetworkObjectId,
+                    //                InternalName: elem.InternalName,
+                    //                Description: elem.Description,
+                    //                Version: elem.Version,
+                    //                LastUpdateDate: new Date(parseInt(elem.LastUpdateDate.substr(6)))
+                    //            });
+                    //    });
+                    //    return res;
+
+                    //    }
+                    //},
+                    model:
+                    {
+                        id: "MenuId",
+                        fields:
+                        {
+                            MenuId: { editable: false, nullable: false },
+                            NetworkObjectId: { editable: false },
+                            InternalName: {
+                                editable: true, validation: {
+                                    maxlength: function (input) {
+                                        if (input.is("[name=InternalName]") && input.val().length > 64) {
+                                            input.attr("data-maxlength-msg", "Max length is 64");
+                                            return false;
+                                        }
+                                        if (input.is("[name=Description]") && input.val().length > 512) {
+                                            input.attr("data-maxlength-msg", "Max length is 512");
+                                            return false;
+                                        }
+                                        return true;
+                                    },
+                                    firstChar: function (input) {
+                                        if (input.is("[name=InternalName]")) {
+                                            var text = input.val();
+                                            if (!/^[a-zA-Z]/.test(text)) {
+                                                input.attr("data-firstChar-msg", "First character must be a letter a-z or A-Z");
+                                                return false;
+                                            }
+                                            else {
+                                                if (/[\~\`\!\@@\#\$\%\^\&\*\(\)\+\=\{\}\|\\\/\[\]\:\;\'\"\<\,\>\.\?]/.test(text)) {
+                                                    input.attr("data-firstChar-msg", "Character must be either a letter(a-z or A-Z) or digit(0-9) or a dash(-) or a underscore(_)");
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                        return true;
+                                    },
+                                    noSpace: function (input) {
+                                        if (input.is("[name=InternalName]")) {
+                                            var text = input.val().trim();
+                                            if (/[\s]/.test(text)) {
+                                                input.attr("data-noSpace-msg", "No space is allowed in Menu Name");
+                                                return false;
+                                            }
+                                        }
+                                        return true;
+                                    },
+                                    unique: function (input) {
+                                        if (input.is("[name=InternalName]")) {
+                                            //var mNames = $('#MenuNames').val();
+                                            //var isValid = menuNames.indexOf(input.val().toUpperCase()) == -1;
+                                            //return isValid;
+                                        }
+                                        return true;
+                                    }
+                                }
+                            },
+                            Description: { editable: true },
+                            ChannelListName: { editable: true },
+                            ChannelIdList: { editable: true },
+                            LastUpdateDate: { editable: false }
+                        }
+                    }
+                },
+                error: function (e) {
+                    if (e.errors) {
+                        grid = $("#gridMenu").data("kendoGrid");
+                        grid.one("dataBinding", function (e) {
+                            e.preventDefault();   // cancel grid rebind if error occurs
+                        });
+
+                        for (var error in e.errors) {
+                            _OperationCompleteWithoutError = false;
+                            showMessage(grid.editable.element, error, e.errors[error].errors);
+                        }
+                    }
+                    _validatedErrors = true;
+                },
+                requestStart: function (e) {
+                    if (e.type === "update") {                        
+                        showWaitSpinner();
+                    }
+                },
+                requestEnd: function (e) {
+                    //if (_validatedErrors && _OperationCompleteWithoutError && _gridOperation != "read") {
+                    //    $("#gridMenu").data("kendoGrid").dataSource.read();
+                    //}
+                    if (e.type != "read") {
+                        
+                        hideWaitSpinner();
+                        //Check is the response contains Errors
+                        if (e.response != null && e.response.Errors != undefined) {
+                        }
+                        else {
+                            var name = "";
+                            var statusMsg = "";
+                            if (e.response != null && e.response.InternalName != undefined) {
+                                name = e.response.InternalName;
+                            }
+                            if (e.response != null && e.response.OperationStatus != undefined && e.response.OperationStatus != null) {
+                                statusMsg = e.response.OperationStatus;
+                            }
+
+                            if (e.type === "update") {
+                                if (_IsActionMenuCopy) {
+                                    statusMessage(true, "Copied the Menu " + name);
+                                }
+                                else {
+                                    statusMsg = statusMsg == "" ? "Updated the Menu " + name : statusMsg;
+                                    statusMessage(true, statusMsg);
+                                }
+                                _IsActionMenuCopy = false;
+                            }
+                            else if (e.type === "create") {
+                                statusMsg = statusMsg == "" ? "Created the Menu " + name : statusMsg;
+                                statusMessage(true, statusMsg);
+                            }
+                            var grid = $("#gridMenu").data("kendoGrid").dataSource;
+                            grid.read();
+                        }
+                    }
+                }
+            },
+            sortable: true,
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                          {
+            @:toolbar: [{ text: "Create Menu", name: "create", hidden: true }],
+                        }
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            dataBound: menuGridDataBound,  // this is where the visiblity button are taken care
+
+            editable: {
+                mode: "popup",
+                template: kendo.template($("#popup_editor").html()),
+                window: {
+                    title: "Create Menu",
+                }
+            },
+            columns: [
+                { field: "NetworkObjectId", width: 50, hidden: true },
+                { field: "InternalName", width: 50, title: "Menu Name" },
+                { field: "Description", width: 100, title: "Description" },
+                { field: "ChannelListName", width: 60, title: "Channels" },
+                { field: "LastUpdateDate", width: 50, title: "Last Updated Date" }
+                , {
+                    command: [
+                      { text: "Open", click: showMenuDetails, name: "custom" }
+                            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                            {
+                            @:, { text: "Copy", click: copyMenuDetails, name: "Copy" }, { text: { update: "Save", cancel: "Cancel" }, name: "edit" }, { text: "Delete", click: deleteMenu, name: "customD" }
+                            }
+                            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                            {
+                            @:, { text: "Revert", click: revertMenu, name: "revert" }
+                            }
+                    ], width: 100, title: "Actions"
+                }
+            ]
+        }).data("kendoGrid");
+    });
+
+    </script>
+}
+

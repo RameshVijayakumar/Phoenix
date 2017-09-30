@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "AppLog";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<div class="container">
+    <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <h4>Application Log</h4>
+    </div>
+    <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <div id="gridAppLog" style="font-size: 75%; width: 100%;"></div>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/common.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        initUIElements();
+    });
+    function initUIElements() {
+    }
+
+    $("#gridAppLog").kendoGrid({
+        dataSource: {
+            type: "json",
+            transport: {
+                read: {
+                    url: "/Admin/GetWADLogs",
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8"
+                }
+            },
+            pageSize: __gridDefaultPageSize
+        },
+        groupable: true,
+        sortable: true,
+        filterable: true,
+        pageable: {
+            refresh: true,
+            pageSizes: __gridPageSizes
+        },
+        columns: [
+            { field: "Level", width: 50, title: "Level" },
+            { field: "EventId", width: 50, title: "EventId" },
+            { field: "Timestamp", width: 100, title: "Timestamp", type: 'date', format: "{0:MM/dd/yyyy hh:mm tt}" },
+            { field: "Message", width: 400, title: "Message" }
+        ]
+    }).data("kendoGrid");
+
+    //Resize Kendo TreeView And/Or Kendo Grid
+    $(window).load(triggerResize);
+    $(window).resize(triggerResize);
+    </script>
+    }

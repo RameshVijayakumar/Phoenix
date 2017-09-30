@@ -1,0 +1,314 @@
+﻿@model Phoenix.Web.Models.SiteModel
+@using Kendo.Mvc.UI;
+@using Phoenix.Web.Models;
+@{
+    ViewBag.Title = "SiteEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    var timeZoneList = TimeZoneInfo
+        .GetSystemTimeZones()
+        .Select(t => new SelectListItem
+        {
+            Text = t.DisplayName,
+            Value = t.Id,
+            Selected = Model != null && t.Id == Model.SiteTimeZone.Id
+        });
+}
+<div class="container" style="width: 1170px !important;">
+    <div>
+        @using (Html.BeginForm("SiteEdit", "Site", FormMethod.Post, new { id = "frmSiteInfo", Class = "form-horizontal", role = "form" }))
+        {
+            @Html.HiddenFor(i => i.StoreNumber)
+            @Html.HiddenFor(i => i.NetworkObjectId)
+            @Html.HiddenFor(i => i.NetworkObject.ParentNetworkObjectId)
+            @Html.HiddenFor(i => i.NetworkObject.Name)
+            @Html.HiddenFor(x => x.SiteId);
+            @Html.HiddenFor(x => x.IrisId);
+            @Html.Hidden("statusMsg", (string)ViewBag.statusMessage)
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <h4>Edit @Model.NetworkObject.Name</h4>
+                </div>
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                        <h4>
+                            <div class='pull-right'>&nbsp;<a id="btnSiteList" class="btn btn-default btn-inverse"><i class="glyphicon glyphicon-chevron-left glyphicon-white"></i>&nbsp;Back</a></div>
+                        </h4>
+                    </div>  
+            </div>
+            <hr style="width: 100%;" />
+            @Html.ValidationMessageFor(x => x.NetworkObject.Name)
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="col-xs-3 pull-right">
+                            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                            {
+                            <div class='pull-right'>
+                                &nbsp;
+                                <button type="button" id="btnSaveSite" value="Save" class="btn btn-default btn-primary savefunctionalbtn" data-loading-text="Saving..." onclick="return validate('save');"><i class="glyphicon glyphicon-ok"></i>&nbsp; Save</button>
+                            </div>
+                            }
+                        </div>
+                        @Html.Label("Address", new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @{
+                                var address1 = Model.Address1;
+                                var address2 = Model.Address2;
+                                var city = Model.City;
+                                var state = Model.State;
+                                var zip = Model.Zip;
+                                if (string.IsNullOrWhiteSpace(address1) == false)
+                                {
+                                    <span>@address1</span>
+                                }
+
+                                if (string.IsNullOrWhiteSpace(address2) == false)
+                                {
+                                    <span>,@address2</span>
+                                }
+
+                                if (string.IsNullOrWhiteSpace(city) == false)
+                                {
+                                    <span><br />@city</span>
+                                }
+
+                                if (string.IsNullOrWhiteSpace(state) == false)
+                                {
+                                    <span><br />@state</span>
+                                }
+
+                                if (string.IsNullOrWhiteSpace(zip) == false)
+                                {
+                                    <span> - @zip</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        @Html.LabelFor(i => i.Phone, new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @Html.TextBoxFor(i => i.Phone, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.Phone)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        @Html.LabelFor(i => i.Latitude, new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @Html.TextBoxFor(i => i.Latitude, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.Latitude)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        @Html.LabelFor(i => i.Longitude, new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @Html.TextBoxFor(i => i.Longitude, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.Longitude)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        @Html.LabelFor(i => i.SiteTimeZone, new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @Html.DropDownListFor(i => i.SiteTimeZoneId, timeZoneList, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.SiteTimeZone)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        @Html.LabelFor(i => i.CuisinesOffered, new { Class = "control-label col-xs-3" })
+                        <div class="col-xs-6">
+                            @Html.HiddenFor(x => x.CuisinesAdded)
+                            @Html.HiddenFor(x => x.CuisinesRemoved)
+                            @Html.Hidden("hdnCuisines", string.Join(",", Model.CuisinesOffered.Select(x => x.CuisineId).ToList()))
+                            @(Html.Kendo().MultiSelect()
+                                  .Name("multiSelectCuisines")
+                                  .Placeholder("Select Cuisines...")
+                                  .BindTo((SelectList)ViewBag.Cuisines).DataTextField("Text").DataValueField("Value").Value(Model.CuisinesOffered.Select(x => x.CuisineId).ToList())) @Html.ValidationMessageFor(i => i.CuisinesOffered)
+                        </div>
+                        <div class="row" id="divAllCuisines">
+                            @if (Model.CuisinesOffered != null && Model.CuisinesOffered.Any())
+                            {
+                                var indx = 0;
+                                foreach (var cui in Model.CuisinesOffered)
+                                {
+                                    //Add hidden var even if it is delete
+                                @Html.Hidden("CuisinesOffered[" + indx.ToString() + "].CuisineId", cui.CuisineId)
+                                @Html.Hidden("CuisinesOffered[" + indx.ToString() + "].CuisineName", cui.CuisineName)
+                                    indx++;
+                                }
+                            }
+                            <span id="newCuisines"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="col-xs-3">
+                                                                    </div>
+                        <div class="col-xs-6">@Html.ValidationMessageFor(i => i.ServicesOffered)
+                            @Html.Hidden("hdnServicesAdded", string.Join(",", Model.ServicesOffered.Select(x => x.ServiceTypeId).ToList()))
+                            @Html.Hidden("hdnServicesAddedCount", Model.ServicesOffered.Count())
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-xs-5">
+                                            <h4>Services Offered</h4>
+                                        </div>
+                                        <div class="col-xs-7">
+                                            <a class="btn btn-default pull-right" id="buttonAddServicesOffered" onclick="buttonAddServicesOffered_onClick('_SiteEdit');"><i class='glyphicon glyphicon-plus'></i>&nbsp;Add Service</a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <div id="divErrorForSiteForm" class="form-group" style="display: none">
+                                                <div class="col-sm-offset-1 col-sm-9">
+                                                    <div id="divErrorMessageForSiteForm" class="field-validation-error"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="divServicesOffered" class="col-xs-12">
+                                            <ul id="ulServices" class="list-unstyled">
+                                                @if (Model.ServicesOffered != null)
+                                                {
+                                                    var indx = 0;
+                                                    foreach (var serivce in Model.ServicesOffered.ToList())
+                                                    {
+                                                    <li id="liService_@indx">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-body">
+                                                                <div class="row">
+                                                                    <div class="col-xs-11">
+                                                                        <h6></h6>
+                                                                    </div>
+                                                                    <div class="col-xs-1">
+                                                                        <a class="btn btn-default btn-xs btn-danger pull-right" id="buttonDeleteServiceFromSite_@indx" onclick="buttonDeleteServiceFromSite_Click(@indx);"><i class='glyphicon glyphicon-remove'></i></a>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].ServiceTypeName, new { Class = "control-label" })</h6>
+                                                                    </div>
+                                                                    <div class="col-xs-7">
+                                                                        @Html.HiddenFor(m => m.ServicesOffered[indx].ServiceTypeId)
+                                                                        @Html.HiddenFor(m => m.ServicesOffered[indx].ToDelete)
+                                                                        @Html.HiddenFor(m => m.ServicesOffered[indx].ServiceTypeId)
+                                                                        @Html.DropDownListFor(i => i.ServicesOffered[indx].ServiceTypeId, new SelectList(ViewBag.AllServices, "Value", "Text", Model.ServicesOffered[indx].ServiceTypeId), new { Class = "form-control ddlServiceType", @disabled="disabled" , data_index= @indx })
+                                                                    </div>
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].EstimatedTime, new { Class = "control-label" })</h6>
+                                                                    </div>
+
+                                                                    <div class="col-xs-7">
+
+                                                                        @Html.TextBoxFor(m => m.ServicesOffered[indx].EstimatedTime, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.ServicesOffered[indx].EstimatedTime)
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].MinOrder, new { Class = "control-label" })</h6>
+                                                                    </div>
+
+                                                                    <div class="col-xs-7">
+
+                                                                        @Html.TextBoxFor(m => m.ServicesOffered[indx].MinOrder, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.ServicesOffered[indx].MinOrder)
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].Fee, new { Class = "control-label" })</h6>
+                                                                    </div>
+
+                                                                    <div class="col-xs-7">
+
+                                                                        @Html.TextBoxFor(m => m.ServicesOffered[indx].Fee, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.ServicesOffered[indx].Fee)
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].AreaCovered, new { Class = "control-label" })</h6>
+                                                                    </div>
+
+                                                                    <div class="col-xs-7">
+
+                                                                        @Html.TextBoxFor(m => m.ServicesOffered[indx].AreaCovered, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.ServicesOffered[indx].AreaCovered)
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-xs-4">
+                                                                        <h6>@Html.LabelFor(m => m.ServicesOffered[indx].TaxTypeId, new { Class = "control-label" })</h6>
+                                                                    </div>
+
+                                                                    <div class="col-xs-7">
+
+                                                                        @Html.TextBoxFor(m => m.ServicesOffered[indx].TaxTypeId, new { Class = "form-control" }) @Html.ValidationMessageFor(i => i.ServicesOffered[indx].TaxTypeId)
+                                                                    </div>
+                                                                    
+                                                                    <div class="col-xs-1"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                        indx = indx + 1;
+                                                    } @* foreach (var Serivce in Model.BranchSerivces.ToList()) *@
+                                                } @* if (Model.BranchSerivces != null) *@
+
+                                            </ul>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var allservicesObj = @Html.Raw(@ViewBag.AllServicesObj);
+        </script>
+ 
+       @Scripts.Render("~/bundles/siteinfoedit")
+
+    <style>
+        .body {
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+        }
+    </style>
+}

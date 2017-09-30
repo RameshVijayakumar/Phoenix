@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="a48402df04cd4976b67e4adcf4fcd969" Name="Diagram1">
+        <EntityTypeShape EntityType="PhoenixODSModel.ODSIngredient" Width="1.5" PointX="1.5" PointY="3.125" IsExpanded="true" FillColor="255, 192, 192" />
+        <EntityTypeShape EntityType="PhoenixODSModel.ODSRecipe" Width="1.5" PointX="3.625" PointY="0.875" IsExpanded="true" FillColor="255, 192, 192" />
+        <EntityTypeShape EntityType="PhoenixODSModel.ODSUnitOfMeasure" Width="1.5" PointX="1.5" PointY="0.875" IsExpanded="true" FillColor="255, 192, 192" />
+        <AssociationConnector Association="PhoenixODSModel.ODSIngredient_Recipe_FK" ManuallyRouted="false" />
+        <AssociationConnector Association="PhoenixODSModel.ODSIngredient_UnitOfMeasure_FK" ManuallyRouted="false" />
+        <AssociationConnector Association="PhoenixODSModel.ODSRecipe_Recipe_FK" ManuallyRouted="false" />
+        <AssociationConnector Association="PhoenixODSModel.ODSRecipe_UnitOfMeasure_FK" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="PhoenixODSModel.ODSPOSData" Width="1.5" PointX="5.75" PointY="0.75" FillColor="255, 192, 192" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

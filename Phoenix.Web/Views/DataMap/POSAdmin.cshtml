@@ -1,0 +1,130 @@
+﻿@model Phoenix.Web.Models.POSAdminModel
+@{
+    ViewBag.Title = "POS Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-2">
+            <h4>@ViewBag.Title</h4>
+            <!--Sidebar content-->
+            <div id="treeview" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-10">
+            <!--Body content-->
+            @*<div class="row">
+                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                        <h5 class="pull-left" style="margin-top: 5px">Menu</h5>&nbsp;&nbsp;&nbsp;
+                        <input style="width: 400px;" id="menuSelection" />
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+
+                        <div class="btn-group pull-right">
+                            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                            {
+                                @Html.CheckBox("chkInheritPOS", false, new { name = "chkInheritPOS" }) <span>Inherit POS &nbsp;</span>
+                                <a class="btn btn-default pull-right" id="btnImportPOS"><i class="glyphicon glyphicon-th-large"></i>&nbsp;Import</a>
+                            }
+                        </div>
+
+                    </div>
+                </div>*@
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="dual-list list-left col-md-6">
+                        <h4>Master Items</h4>
+                        <h6>NOTE: Drag POS Items to link to Master Items</h6>
+                        <div class="well no-padding-bottom">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <div class="input-group">
+                                        <input id="txtItemSearchText" type="text" name="SearchDualList" class="form-control" placeholder="search" />
+                                        <span id="btnItemSearch" class="input-group-addon glyphicon glyphicon-search"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="divLoadingMasteritems" class="k-loading-mask" style="width:100%;height:100%;display:none;"><span class="k-loading-text">Loading...</span><div class="k-loading-image"><div class="k-loading-color"></div></div></div>
+
+                                    <ul id="ulItemList" class="list-group scrollable-list resizable-list" style="word-wrap: break-word;"></ul>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 ">
+                                    <ul id="pagingItemList" class="pagination pagination-sm no-margin"></ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="pull-right" id="divItemListFooter"></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dual-list list-right col-md-6">
+                        <h4>
+                            POS Items
+                        </h4>
+                        <h6>NOTE: Double click on POS to edit</h6>
+                        <div class="well no-padding-bottom">
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <div class="input-group">
+                                        <input type="text" id="txtPOSItemSearchText" name="SearchDualList" class="form-control" placeholder="search" />
+                                        <span id="btnPOSItemSearch" class="input-group-addon glyphicon glyphicon-search"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                {
+                                    <a class='btn btn-default pull-right removemapping' id="btnCreatePOSItem"><i class='glyphicon glyphicon-plus'></i>&nbsp;Create</a>
+                                }
+                                </div>
+                            </div>
+                            <div  class="row">
+                                <div class="col-md-12">
+                                    <div id="divLoadingPOSItems" class="k-loading-mask" style="width:100%;height:100%;display:none;"><span class="k-loading-text">Loading...</span><div class="k-loading-image"><div class="k-loading-color"></div></div></div>
+                                    <ul id="ulPOSDataList" class="list-group resizable-list scrollable-list connectedSortable"></ul>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 ">
+                                    <ul id="pagingPOSDataList" class="pagination pagination-sm no-margin">
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="pull-right" id="divPOSDataListFooter"></h6>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                @*<div id="winPOSItemDetailForm" style="display:none;">
+                        @Html.EditorFor(x => x.POSItem)
+                    </div>*@
+                @Html.Partial("_POSItemDetail")
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+<script>
+    var IsUserAdmin = false;
+    $(function () {
+        
+        @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+        {
+            @:IsUserAdmin = true;
+        }
+    });
+</script>
+
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/poscommon")
+    @Scripts.Render("~/bundles/posadmin")
+
+
+}

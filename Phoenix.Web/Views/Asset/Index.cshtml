@@ -1,0 +1,259 @@
+﻿@{
+    ViewBag.Title = "Asset";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4>Asset Management</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="font-size: 75%;" class="resizable-tree"></div>
+            @*<div id="tv2"  style="font-size:75%;"></div>*@
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span id="tvSelNameAssets"></span>&nbsp;&nbsp;&nbsp;
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span class="text-warning" id="AddAssetMsg"></span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <span class="pull-right">&nbsp;<a class=" btn btn-default btn-sm pull-right functionalbtn" id="btnAssetDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a></span>
+                        <span class="pull-right">&nbsp;<a class="btn btn-default btn-sm pull-right functionalbtn" id="btnAssetTags"><i class='glyphicon glyphicon-tags'></i>&nbsp;Assign Tags</a></span>
+                        <a class="btn btn-default btn-sm pull-right functionalbtn" id="btnOpenUpload"><i class='glyphicon glyphicon-arrow-up'></i>&nbsp;Upload</a>
+                    }
+</div>
+            </div>
+            <div class="row">
+
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridAsset" style="font-size: 75%;" class="resizable-grid active"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="winAssetItems" style="display: none;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="itemPopupStatus" class="statusdiv"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p id="tvSelNameItems">Items</p>
+                </div>
+            </div>
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+            {
+                <div class="row">
+
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="divAddItem">
+                            <a class="btn btn-default btn-sm functionalbtn" id="btnBrowseItem"><span id="spnItemstxt"><i class='glyphicon glyphicon-plus'></i>&nbsp;Browse Items</span></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="divBrowseItems"  >
+                            <a class="btn btn-info btn-sm pull-right addfunctionalbtn" data-loading-text="Processing..." id="btnItemAdd"><i class='glyphicon glyphicon-plus'></i>&nbsp;Add Selected Items</a>
+                            <br />
+                            <br />
+                            <div id="gridItemInfo" style="font-size: 75%;" class="resizable-popup-grid"></div>
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {  <a class="btn btn-default btn-sm pull-right functionalbtn" id="btnItemRemove"><i class='glyphicon glyphicon-remove'></i>&nbsp;Remove Selected</a>      
+                        <br />
+                        <br />
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridItem" style="font-size: 75%;" class="resizable-popup-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="winAssetCats" style="display: none;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="catPopupStatus" class="statusdiv"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p id="tvSelNameCats">Categories</p>
+                </div>
+            </div>
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+            {
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="divAddCat">
+                            <a class="btn btn-default btn-sm functionalbtn" id="btnBrowseCat"><span id="spnCatstxt"><i class='glyphicon glyphicon-plus'></i>&nbsp;Browse Categories</span></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="divBrowseCats">
+                            <a class="btn btn-info btn-sm pull-right addfunctionalbtn" data-loading-text="Processing..." id="btnCatAdd"><i class='glyphicon glyphicon-plus'></i>&nbsp;Add Selected Categories</a>
+                            <br />
+                            <br />
+                            <div id="gridCatInfo" style="font-size: 75%;" class="resizable-popup-grid"></div>
+                            <br />
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {  <a class="btn btn-default btn-sm pull-right functionalbtn" id="btnCatRemove"><i class='glyphicon glyphicon-remove'></i>&nbsp;Remove Selected</a>      
+                        <br />
+                        <br />
+                    }
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridCategory" style="font-size: 75%;" class="resizable-popup-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="winAssetVersions" style="display: none;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="verPopupStatus" class="statusdiv"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
+                    <p id="tvSelNameVersions">Versions</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <a class="btn btn-default btn-sm pull-right functionalbtn" id="btnVersionDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a>   
+                        <br />
+                        <br />
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridVersion" style="font-size: 75%;" class="resizable-popup-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="winUploadAsset" style="display: none; text-align: left; width: 100%" class="form-horizontal">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <p id="divSelBrand">Upload Assets for Brand </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <div class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3">Asset Type</div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            @(Html.Kendo().DropDownList()
+                      .Name("ddlAssetType")
+                      .DataTextField("Value")
+                      .DataValueField("Key")
+                      .DataSource(source =>
+                      {
+                          source.Read(read =>
+                          {
+                              read.Action("GetImageTypes", "Asset");
+                          });
+                      })
+                      .Value("1")
+                )
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <div class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3">Select Asset Tags</div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            <select id="tagsToLinkWhileUpload" data-placeholder="Select tags" style="font-size: 75%; width: 99.4%;" class="multiselectTagCtrl"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <div class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3">Files</div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            @*<input name="photos" id="photos" type="file" />*@
+                            @(Html.Kendo().Upload()
+                    .Name("photos")
+                    .TemplateId("assetTemplate")
+                    .Async(a => a
+                        .Save("Save", "Asset")
+                        .Remove("RemoveFiles", "Asset")
+                        .AutoUpload(false)
+                    )
+                                    //.Multiple(true)
+                    .Events(events => events
+                        .Upload("onUpload").Remove("onAssetRemove").Cancel("onAssetCancel")
+                    )
+                )
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial("_Tags")
+    <div id="divAssetPreview"></div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/tagcommon")
+    @Scripts.Render("~/bundles/treeviewcontrol")
+<script id="assetTemplate" type="text/x-kendo-template">
+    <span class='k-progress'></span>
+        <span class='k-icon k-i-jpg'></span>
+        <span class='k-filename'>#=name#</span>
+        <button type='button' class='k-upload-action'></button>
+        #=getImageExtraInfo(name,size)#
+</script>
+    <script>
+        var assetStorage = '@ViewBag.AssetBlobStorage';
+        var assetContainer = '@ViewBag.AssetBlobContainer';
+    </script>
+    @Scripts.Render("~/bundles/asset")
+    <style type="text/css">
+        .k-upload-button {
+            width: 186px;
+        }
+    </style>
+}

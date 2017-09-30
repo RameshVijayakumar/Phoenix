@@ -1,0 +1,112 @@
+﻿
+<div id="winPOSItemDetailForm" style="display:none;">
+    @using (Html.BeginForm("SavePOSItem", "DataMap", FormMethod.Post, new { id = "newPOSItemForm", Class = "form-horizontal" }))
+    {
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-10" style="text-align:center">
+                    <div id="operationStatus" class="statusdiv"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-10">
+                        @Html.Hidden("POSItem.NetworkObjectId", 0)
+                        @Html.Hidden("POSItem.POSDataId", 0)
+                        @Html.Hidden("POSItem.Index", -1)
+                        @Html.Hidden("POSItem.CreatedDate", 0)
+                        @Html.Hidden("POSItem.UpdatedDate", 0)
+                        @Html.Hidden("ShowStatusAfterOperation", "true")
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Name", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.POSItemName", string.Empty, new { Class = "k-input k-textbox", maxlength = 64 })
+                                    @Html.ValidationMessage("POSItem.POSItemName")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Description", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.MenuItemName", string.Empty, new { Class = "k-input k-textbox", maxlength = 128 })
+                                    @Html.ValidationMessage("POSItem.MenuItemName")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Kitchen Text", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.ButtonText", string.Empty, new { Class = "k-input k-textbox", maxlength = 128 })
+                                    @Html.ValidationMessage("POSItem.ButtonText")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("PLU", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.PLU", string.Empty, new { Class = "k-input k-textbox" })
+                                    @Html.ValidationMessage("POSItem.PLU")
+                                </div>
+                            </div>
+                        </div>
+                    </div><div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Alternate ID", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.AlternatePLU", string.Empty, new { Class = "k-input k-textbox", maxlength = 64 })
+                                    @Html.ValidationMessage("POSItem.AlternatePLU")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Price", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    @Html.TextBox("POSItem.BasePrice", string.Empty, new { Class = "k-input k-textbox", onblur = "formatBasePrice(this)",})
+                                    @Html.ValidationMessage("POSItem.BasePrice")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                @Html.Label("Options", new { Class = "control-label col-xs-3" })
+                                <div class="col-xs-6">
+                                    <div class="row">
+                                        <div class="col-xs-4">
+                                            <label class="checkbox">@Html.CheckBox("POSItem.IsAlcohol", false) Is Alcohol</label>
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <label class="checkbox">@Html.CheckBox("POSItem.IsModifier", false) Is Modifier</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12" style="text-align:center;">
+                            <br />
+                            <a id="btnPOSItemSave" class="btn btn-info btn-sm savefunctionalbtn"><i class="glyphicon glyphicon-ok"></i>&nbsp;Save</a>
+                            &nbsp;&nbsp;<a id="btnPOSItemCancel" class="btn btn-info btn-sm"><i class="glyphicon glyphicon-remove"></i>&nbsp;Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

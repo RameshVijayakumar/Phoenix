@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "Menu Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Hidden("menuTreeId", (string)ViewBag.menuTreeId)
+@Html.Hidden("menuId", (int)ViewBag.menuId)
+@Html.Hidden("networkId", (int)ViewBag.networkId)
+@Html.Hidden("brandId", (int)ViewBag.brandId)
+@Html.Hidden("isExpand", (int)0)
+@Html.Hidden("expandRowId", (int)0)
+@Html.Hidden("rowFound", (int)1)
+@Html.Hidden("networkIdMenuCreated", (int)ViewBag.networkIdMenuCreated)
+@Html.Hidden("parentsBreadCrum", (string)ViewBag.parentsBreadCrum)
+
+<div class="container-fluid">
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <h4>Menu Management</h4>
+            @*<h5><span id="spNetworkName">@ViewBag.networkname</span></h5>*@
+            <h5><span>@ViewBag.parentsBreadCrum</span></h5>
+            @(Html.Kendo().TreeView()
+                .Name("treeview")
+                .HtmlAttributes(new { style = "font-size: 75%;", Class = "resizable-tree" })
+                                                                        .Template("<img src='#=item.img#'/> # if(!item.isAvail) { # <span class='item-notavailable'># } else { # <span># } if(item.isOvr) { # <b>#=item.txt#</b># } else { # #=item.txt## }# </span>")
+                .Events(e =>
+                    {
+                        e.Select("onTreeSelect");
+                        e.Expand("onTreeExpand");
+                        e.DataBound("onTreeDatabound");
+                    })
+                .DataSource(dataSource => dataSource
+                    .Read(read => read
+                        .Action("GetHierarchicalTree", "menu", new { menuid = (int)ViewBag.menuId, netId = (int)ViewBag.networkId })
+                    )
+
+                )
+            )
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+                    <ul id="lstBreadCrumb" class="breadcrumb"></ul>
+            <!--Body content-->
+            <div id="validation">
+                <div id="divMainContent" style="overflow-y: auto !important" class="resizable-grid active"></div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/menuedit")
+@Scripts.Render("~/bundles/itemformcommon")
+    <style>
+        .container {
+            padding-right: 2px !important;
+        }
+    </style>
+    <script>
+        var IsUserOnlyViewer = true;
+        $(function () {
+
+            highlightMenubar("menu");
+
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+            {
+            @:IsUserOnlyViewer = false;
+            }
+        });
+    </script>
+
+}

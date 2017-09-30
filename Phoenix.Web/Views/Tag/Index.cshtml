@@ -1,0 +1,230 @@
+﻿@model Phoenix.Web.Models.TagModel
+@{
+    ViewBag.Title = "Tag";
+    Layout = "~/Views/Shared/_Layout.cshtml";  
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4>Tag Management</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span id="tvSelNameTags"></span>&nbsp;&nbsp;&nbsp;             
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span class="text-warning" id="AddTagMsg"></span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <a class="btn btn-default btn-sm pull-right" id="btnTagDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a>                                               
+                    }
+                </div>
+                <div id="operationStatus" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 statusdiv">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div id="gridTag" style="font-size: 75%;" class="gridTag resizable-grid"></div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/x-kendo-template" id="template">
+     <div class='tag-details'>
+            <ul>
+                <li id="liAssets"><b>Assets:</b>&nbsp;&nbsp;  </li>
+                <li id="liItems"><b>Items:</b>&nbsp;&nbsp;  </li>                          
+            </ul>
+        </div>
+    </script>
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/tag")
+    <script type="text/javascript">
+        var _tagKey = TagKeys.Tag;
+
+        // tag grid
+        $("#gridTag").kendoGrid({
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "/tag/GetTagList",
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        data: { 'callFromGrid': false,'networkObjectId': selectedId , 'tagKey': TagKeys.Tag},
+                        cache: false
+                    },
+                    requestStart: function (e) {
+                        if (e.type === "read") {
+                            if (e.sender.transport.options.read.data.networkObjectId == "" || e.sender.transport.options.read.data.networkObjectId == 0) {
+                                e.preventDefault();
+                            }
+                        }
+                    },
+                    parameterMap: function (model, operation) {
+                        if (operation !== "read") {
+                            var result = {};
+                            for (var member in model) {
+                                if (operation == "create") {
+                                    if (member == "TagId") {
+                                        result[member] = 0;
+                                        continue;
+                                    }
+                                }
+                                result[member] = model[member];
+                            }
+                            return result;
+                        }
+                        else {
+                            return model
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+                schema: {
+                    model: {
+                        id: "TagId",
+                        fields: {
+                            TagId: { editable: false, nullable: true },
+                            TagName: {
+                                editable: true,
+                                validation:
+                                    {
+                                        required: true,
+                                        maxlength: function (input) {
+                                            if (input.is("[name=TagName]") && input.val().length > 64) {
+                                                input.attr("data-maxlength-msg", "Max length is 64");
+                                                return false;
+                                            }
+                                            return true;
+                                        },
+                                        firstChar: function (input) {
+                                            if (input.is("[name=TagName]")) {
+                                                var text = input.val();
+                                                if (!/^[a-zA-Z]/.test(text)) {
+                                                    input.attr("data-firstChar-msg", "You can use letters, numbers and dashes and it must begin with a letter");
+                                                    return false;
+                                                }
+                                                else {
+                                                    if (/[\~\`\!\@@\#\$\%\^\&\*\(\)\_\+\=\{\}\|\\\/\[\]\:\;\'\"\<\,\>\.\?]/.test(text)) {
+                                                        input.attr("data-firstChar-msg", "You can use letters, numbers and dashes and it must begin with a letter");
+                                                        return false;
+                                                    }
+                                                }
+                                            }
+                                            return true;
+                                        },
+                                        noSpace: function (input) {
+                                            if (input.is("[name=TagName]")) {
+                                                var text = input.val().trim();
+                                                if (/[\s]/.test(text)) {
+                                                    input.attr("data-noSpace-msg", "No space is allowed in Tag Name");
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        },
+                                        uniquenessCheck: function (input) {
+                                            if (input.is("[name=TagName]")) {
+                                                var dataItem = $("#gridTag").data("kendoGrid").dataItem(input.closest("tr"));
+                                                var rowId = dataItem.TagId;
+                                                if (!checkForUniquenessOfTagName(input.val(), rowId)) {
+                                                    input.attr("data-uniquenessCheck-msg", "Tag Name must be unique");
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        },
+                                        uniquenessReCheck: function (input) {
+                                            if (_isRecheckForUniquenessNeeded) {
+                                                if (input.is("[name=TagName]")) {
+                                                    var dataItem = $("#gridTag").data("kendoGrid").dataItem(input.closest("tr"));
+                                                    var tagId = dataItem.TagId;
+                                                    recheckForUniquenessOfTagName(input.val(), selectedId);
+                                                    if (_isRecheckForUniquenessCompleted && !_isRecheckForUniquenessResult) {
+                                                        input.attr("data-uniquenessReCheck-msg", "Tag Name must be unique.");
+                                                        return false;
+                                                    }
+                                                }
+                                                return true;
+                                            }
+                                            else {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                            },
+                            NetworkObjectId: { editable: false, visible: false, defaultValue: selectedId },
+                            HasAssociatedData: { editable: false, visible: false },
+                            IsInheritedTag: { editable: false, visible: false }
+                        }
+                    }
+                },
+                requestEnd: function (e) {
+                    if (e.type != "read") {
+                        var grid = $("#gridTag").data("kendoGrid").dataSource;
+                        grid.read();
+                    }
+                }
+            },
+            edit: function (e) {
+                    $("input.k-textbox[name='TagName'] :first").focus();
+            },
+            save: function (e) {
+                e.preventDefault();
+                if (e.model.isNew()) {
+                    e.model.TagId = 0;
+                    e.model.NetworkObjectId = selectedId;
+                }
+                saveTag(e.model.TagId, e.model.TagName, e.model.NetworkObjectId, false);
+            },
+            dataBound: onGridDataBound,
+            sortable: true,
+            filterable: {
+                operators: {
+                    string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                }
+            },
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            detailTemplate: kendo.template($("#template").html()),
+            detailInit: detailInit,
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                          {
+            @:toolbar: [{ name: "create", text: "Add New Tag" }],
+            }
+            columns: [
+                { field: "TagId", title: "Select", width: 20, template: "<input type='checkbox' value=#=TagId# id=chk#=TagName# onclick='onCheckboxClick(this)' />", headerTemplate: "<input type='checkbox' title='Select/Unselect All' onclick='onCheckUncheckAllClick(this)' />", sortable: false, filterable: false },
+                { field: "TagName", width: 400, title: "Tag Name" },
+                { field: "HasAssociatedData", width: 0, hidden: true },
+                { field: "IsInheritedTag", width: 0, hidden: true }
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                {
+                    @:, {command: [
+                    @:{ text: { update: "Save", cancel: "Cancel" }, name: "edit" }
+                    @:, { text: "Delete", click: deleteTag, name: "deleteTag" }
+                    @:], width: 170, title: "Actions" }
+                }
+            ],
+            editable: "inline"
+        }).data("kendoGrid");
+
+        
+
+    </script>
+
+}

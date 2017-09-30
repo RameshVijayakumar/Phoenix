@@ -1,0 +1,173 @@
+﻿@model Phoenix.Web.Models.ScheduleModel
+@{
+    ViewBag.Title = "Schedule Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container" style="width: 1170px !important;">
+    <div>
+        @using (Html.BeginForm("ScheduleEdit", "Schedule", FormMethod.Post, new { id = "frmSchedule", Class = "form-horizontal" }))
+        {
+            <div class="row">
+                @Html.HiddenFor(m => m.SaveSchedule)
+                @Html.HiddenFor(m => m.HasSchDetailsChanged)
+                @Html.HiddenFor(m => m.ScheduleId)
+                @Html.HiddenFor(i => i.IrisId)
+                @Html.HiddenFor(m => m.IsSchNameEditable)
+                @Html.Hidden("networkId", (int)ViewBag.networkId)
+                @Html.Hidden("statusMessage", (string)ViewBag.statusMessage)
+                <div class="col-xs-5">
+            <h5><span>@ViewBag.parentsBreadCrum</span></h5>
+                    @if (Model.ScheduleId == 0)
+                    {
+                        <h4>Create Schedule</h4>
+                    }
+                    else
+                    {
+                        <h4>Edit @Model.SchName</h4> 
+                    }
+
+                </div>
+                    
+                    <div class="col-xs-7">
+                        <h4>
+                            <a id="btnScheduleList" class="btn btn-default pull-right"><i class="glyphicon glyphicon-chevron-left"></i>&nbsp;Back to Schedules</a></h4>
+                    </div>     
+            </div>
+            <hr style="width: 100%;" />
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <label class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3"></label>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            <div class="field-validation-error" id="formErr"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                    {
+                        <a id="btnSaveSch" class="btn btn-default btn-primary pull-right savefunctionalbtn" tabindex="4" data-loading-text="Saving..."><i class="glyphicon glyphicon-ok glyphicon-white"></i>&nbsp;Save</a>
+                    }
+                        <label class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3">Name</label>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            @if (Model.IsSchNameEditable)
+                            {
+                                @Html.TextBoxFor(i => i.SchName, new { Class = "form-control", maxlength = 128, tabindex = 1 }) @Html.ValidationMessageFor(i => i.SchName)
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(i => i.SchName, new { Class = "form-control", @readonly = "readonly", tabindex = 1 })
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <label class="control-label col-xs-3 col-sm-3 col-md-3 col-lg-3">Start Date</label>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            <input type="text" id="j_start_date" tabindex="2" />
+                            @Html.HiddenFor(m => m.StartDate) @Html.ValidationMessageFor(m => m.StartDate)&nbsp;&nbsp;&nbsp;&nbsp;
+                    End Date
+                        <input type="text" id="j_end_date" tabindex="3"/>
+                            @Html.HiddenFor(m => m.EndDate) @Html.ValidationMessageFor(m => m.EndDate)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="form-group">
+                        <div id="gdScheduleDetails" style="font-size:72%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="form-group">
+                    <div class="alert alert-info">
+                        Keyboard Shortcuts:&nbsp;&nbsp;&nbsp;<span class="label label-info">Ctrl</span> + <span class="label label-info">Click</span> Copy &nbsp;&nbsp;&nbsp;&nbsp;<span class="label label-info">Alt</span> + <span class="label label-info">Click</span> Paste&nbsp;&nbsp;&nbsp;&nbsp;<span class="label label-info">Ctrl</span> + <span class="label label-info">Alt</span> + <span class="label label-info">Click</span> Delete
+                    </div>
+                </div>
+                    </div>
+            </div>
+            <div class="row">
+                    <div class="form-group">
+                    <div id="divNotSavedMsg" style="display:none;">
+                        Please click on "Save" to save your changes
+                    </div>
+                </div>
+            </div>
+                            if (Model.SchSummary != null && Model.SchSummary.Count > 0)
+                            {
+                                int index = 0;
+                                foreach (var summ in Model.SchSummary)
+                                {
+            <div class="divRow">
+                <input type="hidden" name="ScheduleModel.SchSummary.Index" value="<%=index.ToString() %>" />
+                <span>@Html.Hidden("SchSummary[" + index.ToString() + "].CycleName", summ.CycleName)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].SchCycleId", summ.SchCycleId)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].SunST", summ.SunST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].SunET", summ.SunET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].MonET", summ.MonET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].MonST", summ.MonST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].TueST", summ.TueST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].TueET", summ.TueET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].WedST", summ.WedST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].WedET", summ.WedET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].ThuST", summ.ThuST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].ThuET", summ.ThuET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].FriST", summ.FriST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].FriET", summ.FriET)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].SatST", summ.SatST)
+                    @Html.Hidden("SchSummary[" + index.ToString() + "].SatET", summ.SatET)
+                </span>
+            </div>
+                                    index++;
+                                }
+                            }
+                                        
+            <div id="wnSelectTime" class="k-content">
+                <div class="form-group" style="width: 100%; text-align: center">
+                    Start Time
+                    <input type="text" id="j_start_time" style="width: 100px" tabindex="101" />&nbsp;&nbsp;
+                    End Time
+                        <input type="text" id="j_end_time" style="width: 100px" tabindex="102" /><div class="field-validation-error" id="formErrTime"></div>
+                    <hr>
+                    <div>
+                        <div class='pull-right'>
+                            &nbsp;
+                            <button type='button' id="btnCancel" class='btn btn-default btn-sm' tabindex="104">Cancel</button>
+                        </div>
+                        <button type='button' id="btnSaveTime" class='btn btn-default btn-sm pull-right' tabindex="103">Ok</button>
+                    </div>
+                    <input type="hidden" id="hdCycleRow" value="0" />
+                    <input type="hidden" id="hdCycleId" value="0" />
+                    <input type="hidden" id="hdDayofWeek" value="0" />
+                    <br /><br />
+                <div id="schoperationStatus" class="statusdiv"/>
+                </div>
+            </div>
+            @functions
+            {
+                private string getList()
+                {
+                    return new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(Model.SchSummary).Replace("&quot;", "'");
+                }
+   
+            }
+        }
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var list = '@getList()'.replace(/\&quot;/g, '\'');
+        var list2 = eval('(' + list + ')');
+    </script>
+    @Scripts.Render("~/bundles/scheduleedit")
+}

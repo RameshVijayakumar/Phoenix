@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="5dd849f71a2045d2a6469934c30f48f7" Name="Diagram1" ZoomLevel="67">
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Nutrition" Width="1.5" PointX="2.125" PointY="12" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.UserProfile" PointX="21.125" PointY="5.75" Width="1.625" FillColor="192, 255, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.webpages_ExtraUserInformation" PointX="23.5" PointY="4.25" Width="1.875" FillColor="192, 255, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.webpages_Membership" PointX="18.75" PointY="0.5" Width="2.125" FillColor="192, 255, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.webpages_OAuthMembership" PointX="18.625" PointY="5.875" Width="2.375" FillColor="192, 255, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.webpages_Roles" PointX="18.75" PointY="3.875" Width="1.75" FillColor="192, 255, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.fk_ExtraInfo_UserId" />
+        <AssociationConnector Association="Phoenix.DataAccess.webpages_UsersInRoles" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Ingredient" Width="1.5" PointX="0.5" PointY="13.875" FillColor="192, 0, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Recipe" Width="1.5" PointX="0.5" PointY="16.75" FillColor="192, 0, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.UnitOfMeasure" Width="1.5" PointX="0.5" PointY="12" FillColor="192, 0, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.Ingredient_Recipe_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Ingredient_UnitOfMeasure_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Recipe_Recipe_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Recipe_UnitOfMeasure_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.TempSchedule" Width="1.5" PointX="2.25" PointY="15.75" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.UserPermission" PointX="21.125" PointY="3.5" Width="1.5" FillColor="192, 255, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.UserPermission_UserProfile_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ItemDescription" Width="1.5" PointX="2.25" PointY="3" FillColor="Teal" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SchCycle" Width="1.5" PointX="14.25" PointY="12.875" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Tag" Width="1.5" PointX="0.5" PointY="9.375" FillColor="64, 0, 64" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.TagAssetLink" Width="1.5" PointX="0.5" PointY="7.375" FillColor="64, 0, 64" />
+        <AssociationConnector Association="Phoenix.DataAccess.FK_TagAssetLink_Tag" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Schedule" Width="1.5" PointX="11.5" PointY="11.25" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuNetworkObjectLink" Width="2.125" PointX="9" PointY="4.75" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Asset" Width="1.5" PointX="0.5" PointY="0.625" FillColor="64, 0, 64" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Menu" Width="1.5" PointX="7.375" PointY="4.375" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.FK_TagAssetLink_Asset" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuNetworkObjectLink_Menu_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.CategoryMenuLink" Width="2" PointX="13" PointY="0.5" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.CategoryObject" Width="1.5" PointX="8" PointY="0.5" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ItemCollectionLink" Width="1.75" PointX="6" PointY="0.5" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ItemCollectionObject" Width="1.875" PointX="4" PointY="0.5" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryMenuLink_Menu_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SubCategoryLink" Width="1.625" PointX="9.5" PointY="0.5" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuSyncTarget" Width="2" PointX="18.625" PointY="13.625" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SpecialNotice" Width="1.5" PointX="18.625" PointY="10.5" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SpecialNoticeMenuLink" Width="2.375" PointX="18.625" PointY="8" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.SpecialNoticeMenuLink_MenuNetworkObjectLink_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SpecialNoticeMenuLink_SpecialNotice_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.vwNetworkObjectTree" Width="1.875" PointX="22.875" PointY="0.625" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.AuditLog" Width="1.5" PointX="21.25" PointY="0.625" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.PrependItemLink" Width="1.625" PointX="2.125" PointY="8.625" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.PrependItemLink_MenuNetworkObjectLink_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ModifierFlag" Width="1.5" PointX="2.125" PointY="5.875" FillColor="Teal" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.AssetCategoryLink" Width="1.625" PointX="2.125" PointY="0.625" FillColor="64, 0, 64" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.AssetItemLink" Width="1.5" PointX="0.5" PointY="5.25" FillColor="64, 0, 64" />
+        <AssociationConnector Association="Phoenix.DataAccess.AssetCatLink_Asset_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.AssetItemLink_Asset_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Category" Width="1.5" PointX="11.25" PointY="0.5" FillColor="0, 64, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ItemCollection" Width="1.5" PointX="5.625" PointY="4.25" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.AssetCatLink_Cat_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Category_Menu_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Category_OverrideCategoryId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryMenuLink_Category_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryMenuLink_ParentCategoryId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryObject_Category_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SubCategoryLink_Category_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SubCategoryLink_OverrideParentSubCategoryId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SubCategoryLink_SubCategory_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CollectionObject_Collection_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollection_Menu_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionLink_Collection_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionLink_ParentCollectionId_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuCategoryCycleInSchedule" Width="2.375" PointX="11.625" PointY="7.25" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuItemCycleInSchedule" Width="2.625" PointX="11" PointY="14.75" FillColor="192, 0, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuItemScheduleLink" Width="2.125" PointX="8.125" PointY="12.5" FillColor="192, 0, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuCategoryCycleInSchedule_SchCycle_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuItemCycleInSchedule_ItemSchedule_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuItemCycleInSchedule_SchCycle_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchCycleParent_SchCycle_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SchNetworkObjectLink" Width="1.5" PointX="14.25" PointY="7.25" FillColor="192, 0, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchNetworkObjectLink_ParentScheduleId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchNetworkObjectLink_Schedule_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SchDetail" Width="1.5" PointX="7.5" PointY="8.25" FillColor="192, 0, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchDetail_SchCycle_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchDetail_Schedule_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWGroup" Width="1.75" PointX="2.125" PointY="21.25" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWGroupItemLink" Width="1.875" PointX="4.125" PointY="21.25" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWItemCategorization" Width="2" PointX="6.125" PointY="21.25" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWItemSubType" Width="1.875" PointX="10.25" PointY="21.25" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWItemType" Width="2.125" PointX="12.375" PointY="21.25" FillColor="Olive" />
+        <AssociationConnector Association="Phoenix.DataAccess.DWGroup_DWGroupKey_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.DWGroupItemLink_DWGroupKey_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.DWItemSubType_DWItemTypeKey_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWItemCookTime" Width="1.75" PointX="14.75" PointY="21.125" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SiteInfo" Width="1.5" PointX="15.25" PointY="0.5" FillColor="64, 0, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.CuisineNetworkObjectLink" Width="1.5" PointX="15.25" PointY="4.375" FillColor="64, 0, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.SerivceNetworkObjectLink" Width="1.625" PointX="16.875" PointY="4.125" FillColor="64, 0, 0" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ServiceType" Width="1.5" PointX="16.875" PointY="2.25" FillColor="64, 0, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.SerivceNetworkObjectLink_ServiceType_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Cuisine" Width="1.5" PointX="16.875" PointY="0.5" FillColor="64, 0, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.CuisineNetworkObjectLink_Cuisine_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuCategoryScheduleLink" Width="2.125" PointX="12.875" PointY="3.75" FillColor="192, 0, 192" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuCategoryScheduleLink_Category_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuCategoryCycleInSchedule_CategorySchedule_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ImportMapping" Width="1.875" PointX="18.25" PointY="16.75" />
+        <AssociationConnector Association="Phoenix.DataAccess.ImportMapping_MenuNetworkObjectLink_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollection_OverrideCollectionId_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.NetworkObject" Width="2" PointX="16.25" PointY="7.375" />
+        <AssociationConnector Association="Phoenix.DataAccess.Asset_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Category_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryMenuLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryObject_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CuisineNetworkObjectLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollection_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionObject_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Menu_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuCategoryScheduleLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuItemScheduleLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuNetworkObjectLink_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuSyncTarget_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ModifierFlag_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.NetworkObject_Parent_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchCycle_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SchNetworkObjectLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SerivceNetworkObjectLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SiteInfo_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SpecialNotice_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.SubCategoryLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Tag_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.UserPermission_NetworkObject_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.ItemPOSDataLink" Width="1.5" PointX="6.125" PointY="11.125" FillColor="255, 128, 128" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemPOSDataLink_NetworkObject_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.DWItemLookup" Width="1.5" PointX="8.375" PointY="21.25" FillColor="Olive" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuTagLink" Width="1.5" PointX="9.375" PointY="8.375" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuTagLink_Menu_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuTagLink_NetworkObject_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuTagLink_ParentMenu_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuTagLink_Tag_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.TargetTagLink" Width="1.5" PointX="21.5" PointY="13.125" />
+        <AssociationConnector Association="Phoenix.DataAccess.TargetTagLink_Target_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.TargetTagLink_Tag_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.MenuSyncTargetDetail" Width="2.5" PointX="21.375" PointY="9.75" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuSyncTargetDetail_NetworkObject_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.Item" Width="1.5" PointX="4" PointY="4.375" FillColor="0, 64, 0" />
+        <AssociationConnector Association="Phoenix.DataAccess.AssetItemLink_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryObject_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CategoryObject_ParentItemId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.DWGroupItemLink_ItemId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_DWItemCategorizationKey_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_DWItemCookTime_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_PrepOrder_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_DWItemSubTypeKey_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.CollectionObject_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_MenuId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_ModifierFlagId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_NetworkObjectId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_Nutrition_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_OverrideItemId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_Recipe_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.Item_SelectedDescriptionId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionLink_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemCollectionObject_ParentItemId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemDescription_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemPOSDataLink_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemPOSDataLink_ParentMasterItem_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.MenuItemScheduleLink_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.PrependItemLink_Item_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.PrependItemLink_OverrideParentPrependItemId_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.PrependItemLink_PrependItem_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.TempSchedule_Item_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.POSData" Width="1.625" PointX="6.25" PointY="15.625" />
+        <AssociationConnector Association="Phoenix.DataAccess.ItemPOSDataLink_POSData_FK" />
+        <AssociationConnector Association="Phoenix.DataAccess.POSData_NetworkObject_FK" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.vwItemwithPOS" Width="1.5" PointX="17.375" PointY="20.75" FillColor="255, 224, 192" />
+        <EntityTypeShape EntityType="Phoenix.DataAccess.vwPOSwithItem" Width="1.5" PointX="19.375" PointY="20.75" FillColor="255, 224, 192" />
+        </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

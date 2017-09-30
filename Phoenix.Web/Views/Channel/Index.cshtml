@@ -1,0 +1,121 @@
+﻿@model Phoenix.Web.Models.TagModel
+@{
+    ViewBag.Title = "Channel";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4>Channel Management</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span id="tvSelNameChannels"></span>&nbsp;&nbsp;&nbsp;
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span class="text-warning" id="AddChannelMsg"></span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <a class="btn btn-default btn-sm pull-right" id="btnChannelDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a>
+                    }
+                </div>
+                <div id="operationStatus" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 statusdiv">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    @(Html.Kendo()
+                                            .Grid<Phoenix.Web.Models.TagModel>()
+                                                    .Name("gridChannel").HtmlAttributes(new { style = "font-size: 75%;", Class = "resizable-grid" })
+                                    .Columns(columns =>
+                                        {
+                                            columns.Bound(p => p.TagId).ClientTemplate("<input type='checkbox' value=#=TagId# onclick='onCheckboxClick(this)'/>").Title("Select")
+                                                                                .HeaderTemplate("<input type='checkbox' title='Select/Unselect All' onclick='onCheckUncheckAllClick(this)' />")
+                                                                                .Sortable(false).Filterable(false).Width(25);
+                                            columns.Bound(p => p.TagName).Width(250).Title("Channel Name");
+                                            if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                            {
+                                                columns.Command(command =>
+                                                {
+                                                    command.Edit().CancelText("Cancel").UpdateText("Save");
+                                                    if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                                    {
+                                                        command.Custom("Delete").Click("deleteChannel");
+                                                    }
+                                                }).Width(100).Title("Actions");
+                                            }
+                                        })
+                                   .ToolBar(toolbar =>
+                                       {
+
+                                           if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                           {
+                                               toolbar.Create().Text("Add New Channel");
+                                           }
+                                       })
+                                   //.ClientDetailTemplateId("ChannelDetailtemplate")
+                                   .Editable(editable => editable.Mode(GridEditMode.InLine))
+                                   .Pageable(pageable => pageable
+                                            .Refresh(true)
+                                            .PageSizes(new int[] { 100, 150, 200 })
+                                            .ButtonCount(5))
+                                    .Sortable().Filterable()
+                                   .DataSource(dataSource => dataSource
+                                       .Ajax()
+                                       .Batch(false).PageSize(150)
+                                       .Model(model =>
+                                           {
+                                               model.Id(p => p.TagId);
+                                               model.Field(p => p.TagId).Editable(false);
+                                               model.Field(p => p.TagName);
+                                               model.Field(p => p.NetworkObjectId).DefaultValue(0);
+                                           })
+                                                            .Read(read => read.Action("GetTagList", "Tag", new { callFromGrid = true }).Data("chAdditionalReadData"))
+                                                            .Update(update => update.Action("SaveChannel", "Tag").Data("chAdditionalSaveData"))
+                                                            .Create(create => create.Action("SaveChannel", "Tag").Data("chAdditionalSaveData"))
+                                           .Events(events =>
+                                           {
+                                               events.Error("chError");
+                                               events.RequestEnd("chRequestEnd");
+                                               events.RequestStart("chRequestStart");
+                                           })
+                                       )
+                                       .Events(e =>
+                                       {
+                                           e.DataBound("onChannelGridDataBound");
+                                           e.Edit("chEdit");
+                                           e.Save("chSave");
+                                           //e.DetailInit("chDetailInit");
+                                       })
+                    )
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/x-kendo-template" id="ChannelDetailtemplate">
+        <div class='tag-details'>
+            <ul>
+                <li id="liMenus"><b>Menus:</b>&nbsp;&nbsp;  </li>
+                <li id="liTargets"><b>Targets:</b>&nbsp;&nbsp;  </li>
+            </ul>
+        </div>
+    </script>
+
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/channel")
+
+
+}
+
+

@@ -1,0 +1,123 @@
+﻿@{
+    ViewBag.Title = "AuditLog";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<br />
+<div class="container">
+    <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <h4>
+            Audit Log &nbsp;
+            <div class="btn-toolbar" role="toolbar">
+                <div id="dayfilter" class="btn-group btn-group-sm" role="group">
+                    <button value="0" class="btn btn-default active">Today</button>
+                    <button value="1" class="btn btn-default">Yesterday</button>
+                    <button value="7" class="btn btn-default">Last 7 Days</button>
+                    <button value="30" class="btn btn-default">Last 30 Days</button>
+                    <button value="90" class="btn btn-default">Last 90 Days</button>
+                    <button value="A" class="btn btn-default">All</button>
+                </div>
+            </div>
+        </h4>
+    </div>
+    <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <div id="gridAuditLog" style="font-size: 75%; width: 100%;" class="resizable-grid"></div>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/common.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            highlightMenubar("admin", "audit");
+
+            $("#dayfilter button").click(function (e) {
+                $(this).addClass('active').siblings().removeClass('active');
+                reloadGrid();
+            });
+
+            $("#gridAuditLog").kendoGrid({
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: {
+                            url: "/Admin/GetAuditLogs",
+                            dataType: "json",
+                            data: { 'noofDays': 1 },
+                            type: "GET",
+                            contentType: "application/json; charset=utf-8"
+                        }
+                    },
+                    group: { field: "Type" },
+                    pageSize: __gridDefaultPageSize,
+                    sort: { field: "CreatedDate", dir: "desc" },
+                    serverPaging: true,
+                    serverFiltering: true,
+                    serverSorting: true,
+                    schema: {
+                        data: "data",
+                        total: "total",
+                        model:
+                        {
+                            id: "AuditLogId",
+                            fields:
+                            {
+                                AuditLogId: { editable: false, hidden: true },
+                                UserId: { editable: false, hidden: true },
+                                NetworkObjectId: { editable: false, hidden: true },
+                                NetworkObjectName: { editable: false },
+                                UserName: { editable: false },
+                                Type: { editable: false },
+                                Description: { editable: false },
+                                Details: { editable: false, hidden: true },
+                                CreatedDate: { editable: false, type: "date" },
+                                Name: { editable: false }
+                            }
+                        }
+                    },
+                },
+                dataBound: function (e) {
+                    scrollToTop(this);
+                    triggerResizeGrid();
+                },
+                groupable: true,
+                sortable: true,
+                resizable: true,
+                filterable: {
+                    operators: {
+                        string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                    }
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: __gridPageSizes
+                },
+                columns: [
+                    { field: "UserName", width: 70, title: "User" },
+                    { field: "NetworkObjectName", width: 80, title: "NetworkObject" },
+                    { field: "Type", width: 50, title: "Type" },
+                    { field: "Name", width: 50, title: "Name" },
+                    { field: "Description", width: 160, title: "Description" },
+                { field: "CreatedDate", width: 50, title: "Timestamp", format: "{0:MM/dd/yyyy hh:mm tt}" }
+                ]
+            }).data("kendoGrid");
+
+        });
+
+        function reloadGrid() {
+            var grdAuditLogdataSource = $("#gridAuditLog").data("kendoGrid").dataSource;
+
+            var noofDaysSelected = $('#dayfilter').find("button.active").prop('value');
+            noofDaysSelected == undefined ? 1 : noofDaysSelected;
+
+            grdAuditLogdataSource.transport.options.read.data.noofDays = noofDaysSelected;
+            grdAuditLogdataSource.read();
+        }
+
+        //Resize Kendo TreeView And/Or Kendo Grid      
+        $(window).load(function () {
+            triggerResize();
+        });
+        $(window).resize(function () {
+            triggerResize();
+        });
+    </script>
+}

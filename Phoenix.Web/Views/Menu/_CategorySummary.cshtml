@@ -1,0 +1,55 @@
+﻿<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4 class="pull-left">Categories</h4>
+            &nbsp;
+            <a id="btnMenuList" class="btn btn-default btn-inverse pull-right functionalbtn"><i class="glyphicon glyphicon-chevron-left glyphicon-white"></i>&nbsp;Back to Menus</a>
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+            {
+            <span class="pull-right">&nbsp;</span><a class="btn btn-default pull-right functionalbtn" id="btnCreateCat"><i class="glyphicon glyphicon-th-large"></i>&nbsp;Create Category</a>
+            }
+        </div>
+    </div>
+    <hr style="width: 100%;" />
+    <div class="form-group">
+        @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+        {
+        <a id="btnOpenMasterCats" class="btn btn-default pull-right functionalbtn"><i class="glyphicon glyphicon-plus"></i>&nbsp;Add Existing Category</a>
+        }
+    </div>
+    <div class="form-group">
+        <br />
+        <br />
+        <div id="gridCategories" style="font-size: 75%;"></div>
+        <br />
+        <div>
+            <ul id="specialNoticePanelBar">
+                <li id="specialNoticePanelItem"><b><span class="div-with-marign-5" style="font-size: 120%;">Special Notices</span></b>
+                    <div class="div-with-marign-10">
+                       @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                       {
+                        <div class="form-group">
+                            <a id="btnSaveSpecialNotice" class="btn btn-default btn-sm pull-right functionalbtn"><i class="glyphicon glyphicon-ok"></i>&nbsp;Save</a>
+                        </div>
+                        <br />
+                        }
+                        <br />
+    
+                        <div class="form-group">
+                            <div id="gridSpecialNotice" style="font-size: 75%;" />
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+@if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                       {
+<div id="windowMasterCatList" class="k-content resizable-window">
+    <a id="btnMasterCatAdd" class="btn btn-info btn-sm pull-right addfunctionalbtn" data-loading-text="Processing..."><i class="glyphicon glyphicon-plus"></i>&nbsp;Add Selected Categories</a>
+    <br />
+    <br />
+    <div id="gridMasterCatInfo" style="font-size: 75%;" class="resizable-popup-grid"></div>
+</div>
+}

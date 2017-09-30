@@ -1,0 +1,120 @@
+﻿@{
+    ViewBag.Title = "Site Actions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3">
+            <!--Sidebar content-->
+            <h4>
+                Sites@*<div class="pull-right">
+                    <a class="btn btn-default btn-xs pull-right" id="btnClearTreeViewSelection" href="#">Clear</a>
+                </div>*@
+            </h4>
+            <div id="treeView" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9">
+
+            <div id="divMenuSync" class="active">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12"><b>Menu Sync</b>
+                        <span class="text-warning" id="AddTargetMsg"></span>
+                        @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                        {
+                            <a class="btn btn-default btn-sm pull-right btn-primary savefunctionalbtn" id="btnMenuSync" data-loading-text="Syncing..."><i class='glyphicon glyphicon-white glyphicon-ok'></i>&nbsp;Menu Sync</a>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="gridSyncTarget" style="font-size: 75%;" class="resizable-grid active" data-grid-height-offset-top="10"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <h4>Sync History
+                        @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                        {
+                            <a class="btn btn-default btn-sm pull-right  savefunctionalbtn" id="btnDeleteSyncHistroy" data-loading-text="Deleting..."><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Sync History</a>
+                        }
+                        </h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div id="gridSyncTargetDetail" style="font-size: 75%;" class="resizable-grid active" data-grid-height-offset-top="10"></div>
+                    </div>
+                </div>
+            </div>
+
+            @*<div class="tabbable tabs-top" id="tbItem">
+                <ul class="nav nav-tabs" id="tabItemGroup">
+                    <li><a href="#1A" data-toggle="tab" class="tabElement" onclick="javascript: adminTabSelected('#1A'); return false;">Menu Sync</a></li>
+                    <li><a href="#1B" data-toggle="tab" class="tabElement" onclick="javascript: adminTabSelected('#1B'); return false;">AutoMap Sites</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane" id="1A">
+                        <br />
+                    </div>
+                    <div class="tab-pane" id="1B">
+                        <br />
+                        <div id="divAutoMapSite" class="inactive">
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    <h5 class="pull-left" style="margin-top: 5px">Menu</h5>
+                                    &nbsp;&nbsp;&nbsp;
+                                    <input style="width: 400px;" id="menuSelection" />
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                    {
+                                        <a class="btn btn-default btn-sm pull-right btn-primary" id="AutoMap"><i class='glyphicon glyphicon-white glyphicon-resize-small'></i>&nbsp;Auto Map</a>
+                                    }
+                                </div>
+                            </div>
+                            <br />
+                            <div id="divAMContent">
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <div class="progress progress-striped active">
+                                            <div class="progress-bar" id="mapProgressBar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row resizable-grid inactive" style="font-size: 75%; overflow-y: auto !important">
+                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <table id="tb_mapProgress" class="table table-condensed table-hover">
+                                            <colgroup>
+                                                <col class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+                                                <col class="col-xs-1 col-sm-1 col-md-1 col-lg-10">
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Site</th>
+                                                    <th>Message</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    </div>
+</div>
+</div>
+@section scripts{
+    @*<!--Reference the SignalR library. -->
+    <script src="~/Scripts/jquery.signalR-2.0.0.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>*@
+
+
+    @Scripts.Render("~/bundles/siteactions")
+}

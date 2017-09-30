@@ -1,0 +1,331 @@
+﻿
+@{
+    ViewBag.Title = "Site";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<br />
+<div class="container">
+    <div class="row ">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+            @*<div id="tv2"  style="font-size:75%;"></div>*@
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">          
+            <!--Body content-->
+            <div class="tabbable">
+                <ul class="nav nav-tabs" id="tabItemGroup">
+                    <li class="active"><a href="#1A" data-toggle="tab" id="anchor1A" onclick="OnTabClick('anchor1A')">Sites</a></li>
+                    <li><a href="#1B" data-toggle="tab" id="anchor1B" onclick="OnTabClick('anchor1B')">Groups</a></li>
+                </ul>    
+                           
+                <div class="tab-content">
+                    <div class="tab-pane active" id="1A">
+                        <div class="row">
+                            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                <p id="tvSelNameSites">All sites</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div id="gridSite" style="font-size: 75%;" class="resizable-grid active"></div>
+                                </div>
+                        </div>
+
+                    </div>
+                    <div class="tab-pane" id="1B">
+                        <div class="row">
+                            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                <p id="tvSelNameGroups">All groups</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <div id="gridGroup" style="font-size: 75%;" class="resizable-grid inactive"></div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div >    
+</div>
+
+
+@section scripts{     
+    @Scripts.Render("~/bundles/treeviewcontrol")               
+
+    <script type="text/javascript">
+        var _tree = null;
+        var _networkObjectType = '';
+        var runCacheBreak = false;
+        var activeTabId = "anchor1A";
+        var _selectedTreeNodeName = false;
+
+        _expansionSequence = sessionStorage.ExpansionSequence_Site != undefined && sessionStorage.ExpansionSequence_Site != "" ? sessionStorage.ExpansionSequence_Site.split(',') : new Array();
+        _initialExpansionAfterSelectionItemType = _initialExpansionItemType = highestNetworkLevelAccess != undefined && highestNetworkLevelAccess != "" ? parseInt(highestNetworkLevelAccess) : NetworkObjectType.Root; //This is the @@Model.ItemType and as per the business requirement, tree needs to be expanded till Franchise                     
+        
+        function OnTabClick(tabId) {
+            //Know if this the tab change event
+            if (activeTabId == tabId) {
+            }
+            else {
+                activeTabId = tabId;
+                loadActiveTabData();
+            }
+        }
+
+        function loadActiveTabData() {
+            if (activeTabId == 'anchor1B') {
+                refreshGridData('gridGroup');
+                $("#gridGroup").removeClass("inactive").addClass("active");
+                $("#gridSite").removeClass("active").addClass("inactive");
+            } else {
+                refreshGridData('gridSite');
+                $("#gridSite").removeClass("inactive").addClass("active");
+                $("#gridGroup").removeClass("active").addClass("inactive");
+            }
+        }
+
+
+        $(document).ready(function () {
+            highlightMenubar("site");
+            var _root = new kendo.data.HierarchicalDataSource({
+                transport: {
+                    read: {
+                        cache: false,
+                        url: "/site/networkObjectTreeView",
+                        dataType: "json",
+                        data: { 'breakcache': new Date().getTime(), 'includeaccess': true, 'networkObjectType': _initialExpansionItemType }
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "Id",
+                        hasChildren: "HasChildren",
+                        expanded: "expanded",
+                        parentId: "parentId",
+                        ItemType: "ItemType"
+                    }
+                }
+            });
+
+            _tree = $("#treeView").kendoTreeView({
+                dataSource: _root,
+                dataTextField: "Name",
+                loadOnDemand: true, //do NOT recurse with databound to expand nodes               
+                dataImageUrlField: "Image",
+                dataBound: function (e) {
+                    handleTreeDataBound(e);
+                },
+                select: function (e) {
+                    handleTreeNodeSelection(e.node);
+                }
+            });
+
+            treeViewCtrl = $("#treeView").data("kendoTreeView");
+
+
+            initUIElements();
+        });
+
+        function initUIElements() {
+
+            // open a tab initially
+            //$('#tabItemGroup a:first').tab('show');
+        }
+
+        // site grid
+        $("#gridSite").kendoGrid({
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "/site/GetSiteList",
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        data: { 'networkObjectId': selectedId, 'breakcache': new Date().getTime() }
+                    },
+                    
+                },
+                requestStart: function (e) {
+                    if (e.type === "read") {
+                        var selectedNetId = e.sender.transport.options.read.data.networkObjectId;
+                        if (selectedNetId == "" || selectedNetId == 0 || selectedNetId == null) {
+                            e.preventDefault();
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true,
+                schema: {
+                    data: "data",
+                    total: "total"                    
+                },
+            },
+            dataBound: onSiteGridDataBound,
+            groupable: true,
+            sortable: true,
+            filterable: {
+                operators: {
+                    string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                }
+            },
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            columns: [
+                { field: "NetworkObject.Name", width: 100, type: "string", title: "Restaurant Name" },
+                {
+                    field: "StoreNumber", width: 60, type: "number", title: "Restaurant #", format: "{0:0}", filterable: {
+                        ui: function (element) {
+                            element.kendoNumericTextBox({
+                                format: "{0:0}",
+                                min: 0
+                            });
+                        }
+                    }
+                },
+                {
+                    field: "NetworkObject.IrisId", width: 150, type: "number", title: "Site Id", format: "{0:0}", filterable: {
+                        ui: function (element) {
+                            element.kendoNumericTextBox({
+                                format: "{0:0}",
+                                min: 0
+                            });
+                        }
+                    }
+                },
+                { field: "Address1", width: 150, type: "string", title: "Address" },
+                { field: "City", width: 90, type: "string", title: "City" },
+                { field: "State", width: 40, type: "string", title: "State" },
+                { field: "Zip", width: 40, type: "string", title: "Zip" }
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                {
+                  @:, { command: [{ text: "Edit", name: "edit", click: customSiteEdit }], width: 90, title: "Actions" } //, { text: "Delete", click: deleteSite, name: "deleteSite" }
+                }
+            ]
+        }).data("kendoGrid");
+
+
+        // group grid
+        $("#gridGroup").kendoGrid({
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "/site/GetGroups",
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        data: { 'networkObjectId': selectedId, 'breakcache': new Date().getTime() }
+
+                    },                    
+                },
+                requestStart: function (e) {
+                    if (e.type === "read") {
+                        var selectedNetId = e.sender.transport.options.read.data.networkObjectId;
+                        if (selectedNetId == "" || selectedNetId == 0 || selectedNetId == null) {
+                            e.preventDefault();
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+            },
+            dataBound: onGroupGridDataBound,
+            groupable: true,
+            sortable: true,
+            filterable: {
+                operators: {
+                    string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                }
+            },
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            columns: [
+           { field: "GroupName", width: 90, title: "Group Name" },
+           { field: "GroupType", width: 90, title: "Group Type" },
+           { field: "ParentName", width: 90, title: "Parent" }
+            ]
+        });
+
+        function restoreSelectionSub() {
+            try {
+                selectedId = sessionStorage.SelectedTreeNodeId_Site;
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+
+        function storeTreeNodeExpansionNSelectionSub(selectedNode) {
+            try {
+                sessionStorage.ExpansionSequence_Site = _expansionSequence;
+                sessionStorage.SelectedTreeNodeId_Site = selectedId;
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+
+        function handleTreeDataBoundSub(e) {
+            //Do Nothing
+        }
+
+        function handleTreeNodeSelectionSub(selectedNode) {
+            try {
+                selectedId = treeViewCtrl.dataItem(selectedNode).id;
+                _selectedTreeNodeName = treeViewCtrl.dataItem(selectedNode).Name;
+
+                activeTabId = $("#tabItemGroup li.active").children()[0].getAttribute('id');
+                loadActiveTabData();
+
+                $('#tvSelNameSites').html('Sites under <b>' + _selectedTreeNodeName + '</b>');
+                $('#tvSelNameGroups').html('Groups under <b>' + _selectedTreeNodeName + '</b>');
+                
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+        
+        function customSiteEdit(e) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            document.location = '/Site/SiteEdit/' + dataItem.IrisId;
+        }
+
+        function refreshGridData(gridId) {
+            var grid = $("#" + gridId).data("kendoGrid").dataSource;
+            grid.transport.options.read.data.networkObjectId = selectedId;
+            grid.transport.options.read.data.breakcache = new Date().getTime();
+            grid.page(1);
+            if (gridId == 'gridGroup') {
+                grid.read();
+            }
+        }
+
+        function onSiteGridDataBound() {
+            scrollToTop(this);
+            triggerResizeGrid();
+        }
+
+        function onGroupGridDataBound() {
+            scrollToTop(this);
+            triggerResizeGrid();
+        }
+
+        //Resize Kendo TreeView And/Or Kendo Grid
+        $(window).load(function () { triggerResize(); });
+        $(window).resize(function () { triggerResize(); });
+     
+    </script>  
+}

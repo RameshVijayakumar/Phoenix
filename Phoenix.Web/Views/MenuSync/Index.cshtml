@@ -1,0 +1,481 @@
+﻿@model Phoenix.Web.Models.MenuSyncTargetModel
+
+@{
+    ViewBag.Title = "Menu Sync";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row col-xs-12 col-sm-12 col-md-12 col-lg-12">
+        <h4>Sync Target Management</h4>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span id="tvSelNameTargets"></span>&nbsp;&nbsp;&nbsp;             
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                    <span class="text-warning" id="AddTagMsg"></span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                       <a class="btn btn-default btn-sm pull-right" id="btnTargetRefresh"><i class='glyphicon glyphicon-refresh'></i> Refresh Targets</a>                                               
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div id="gridSyncTarget" style="font-size: 75%;" class="resizable-grid"></div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/tagcommon")
+    @Scripts.Render("~/bundles/treeviewcontrol")
+
+    <script id="popup_editor" type="text/x-kendo-template">
+			<div class="k-edit-label">
+				<label for="TargetName">Target Name</label>
+			</div>
+			<div data-container-for="TargetName" class="k-edit-field">
+               <input type="text" class="k-input k-textbox" name="TargetName" required="required" data-bind="value:TargetName">         
+                @Html.ValidationMessageFor(m => m.TargetName)
+            </div>
+			<div class="k-edit-label">
+				<label for="URL">Target URL</label>
+			</div>
+			<div data-container-for="URL" class="k-edit-field">
+                <input type="text" class="k-input k-textbox" name="URL" required="required" data-bind="value:URL">                
+                @Html.ValidationMessageFor(m => m.URL)                
+            </div>
+            <div class="k-edit-label">
+                <label for="Description">Channel(s)</label>
+            </div>
+            <div data-container-for="ChannelIdList" class="k-edit-field">
+                <select multiple='multiple' data-placeholder="Select Channels..." data-bind='value:Channels' id="Channels" class="k-input" style="width:400px;" name="Channels" />
+            </div>
+		</script>
+    <script type="text/kendo-template" id="message">
+        <div class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error" style="margin: 0.5em; display: block; " data-for="#=field#" data-valmsg-for="#=field#" id="#=field#_validationMessage">
+        <span class="k-icon k-warning"> </span>#=message#<div class="k-callout k-callout-n"></div></div>
+    </script>
+
+    <script>
+        var _isNewTargetToAdd = false;
+        var _isValidTreeNodeSelected = false;
+        var validationMessageTmpl = kendo.template($("#message").html());     
+        _expansionSequence = sessionStorage.ExpansionSequence_Target != undefined && sessionStorage.ExpansionSequence_Target != "" ? sessionStorage.ExpansionSequence_Target.split(',') : new Array();
+        _initialExpansionAfterSelectionItemType = _initialExpansionItemType = highestNetworkLevelAccess != undefined && highestNetworkLevelAccess != "" ? parseInt(highestNetworkLevelAccess) : NetworkObjectType.Root; //This is the @@Model.ItemType
+
+        $(document).ready(function () {
+            highlightMenubar("admin", "target");
+            var _root = new kendo.data.HierarchicalDataSource({
+                transport: {
+                    read: {
+                        cache: false,
+                        url: "/site/BrandLeveTree",
+                        dataType: "json",
+                        data: { 'networkObjectType': _initialExpansionItemType }
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "Id",
+                        hasChildren: "HasChildren",
+                        expanded: "expanded",
+                        parentId: "parentId",
+                        ItemType: "ItemType"
+                    }
+                }
+            });
+
+            _tree = $("#treeView").kendoTreeView({
+                dataSource: _root,
+                dataTextField: "Name",
+                dataImageUrlField: "Image",
+                loadOnDemand: true,
+                dataBound: function (e) {
+                    handleTreeDataBound(e);
+                },
+                select: function (e) {
+                    handleTreeNodeSelection(e.node);
+                }
+            });
+
+            treeViewCtrl = $("#treeView").data("kendoTreeView");
+        });
+
+        $(function () {
+
+            $("#btnTargetRefresh").hide();
+
+            // defined function to add hover effect and remove it when row is clicked
+            addExtraStylingToGrid = function (e) {
+                scrollToTop(this);
+                $("table.k-focusable tbody tr").hover(function () {
+                    $(this).toggleClass("k-state-hover");
+                });
+
+                //Disable 'Add New Special Notice' button              
+                if (!_isValidTreeNodeSelected) {
+                    $(".k-grid-add :first").addClass('disabledAnchor').addClass("k-state-disabled");
+                    $(".k-grid-add :first").attr('disabled', 'disabled');
+                }
+
+                triggerResizeGrid();
+            };
+
+            // defines KendoGrid: gridSyncTarget
+            $("#gridSyncTarget").kendoGrid({
+                edit: function (e) {
+                    e.container.data("kendoWindow").title("Target");
+                    window.setTimeout(function () {
+                        $(".k-edit-form-container").parent().width(650).height(200).data("kendoWindow").center();
+                    }, 50);
+                    e.container.data('kendoWindow').bind('activate', function (e) {
+                        $('[name="TargetName"]').select();
+                    })
+
+                    initChannelmultiselect($('[name="Channels"]'), e.model.MenuSyncTargetId, e.model.isNew(),TagEntities.Target);
+                },
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: {
+                            cache: false,
+                            url: "/MenuSync/GetTargetList",
+                            dataType: "json",
+                            type: "GET",
+                            contentType: "application/json; charset=utf-8",
+                            data: { 'networkObjectId': selectedId }
+                        },
+                        create: {
+                            url: "/MenuSync/SaveTarget",
+                            dataType: "json",
+                            type: "POST"
+                        },
+                        update: {
+                            url: "/MenuSync/SaveTarget",
+                            dataType: "json",
+                            type: "POST"
+                        },
+                        parameterMap: function (model, operation) {
+                            if (operation !== "read") {                            
+                                var result = {};                              
+                                for (var member in model) {                                            
+                                    if (member == "MenuSyncTargetId") {
+                                        if (operation == "create") {
+                                            result[member] = 0;
+                                        } else {
+                                            result[member] = model[member];
+                                        }
+                                    }
+                                    else if (member == "NetworkObjectId") {
+                                        if (operation == "create") {
+                                            result[member] = selectedId;
+                                        } else {
+                                            result[member] = model[member];
+                                        }
+                                    }
+                                    else if (member == "ChannelIdList") {
+                                        var channels = model["Channels"];
+                                        if (channels != undefined) {
+                                            var channelIds = new Array();
+                                            $.each(channels, function (idx, obj) {
+                                                channelIds.push(obj.TagId);
+                                            });
+                                            result[member] = channelIds.join(',');
+                                        }
+                                        else {
+                                            result[member] = model[member];
+                                        }
+                                    }
+                                    else if (member == "ChannelNameList") {
+                                        var channels = model["Channels"];
+                                        if (channels != undefined) {
+                                            var channelNames = new Array();
+                                            $.each(channels, function (idx, obj) {
+                                                channelNames.push(obj.TagName);
+                                            });
+                                            result[member] = channelNames.join(',');
+                                        }
+                                        else {
+                                            result[member] = model[member];
+                                        }
+                                    }
+                                    else {
+                                        result[member] = model[member];
+                                    }
+                                }
+                                return result;
+                            }
+                            else {
+                                return model
+                            }
+                        }
+                    },
+                    pageSize: __gridDefaultPageSize,
+                    schema: {
+                        errors: "Errors",
+                        model:
+                        {
+                            id: "MenuSyncTargetId",
+                            fields:
+                            {                            
+                                MenuSyncTargetId: { editable: false, nullable: true },
+                                TargetName: { editable: true },
+                                URL: { editable: true },
+                                Token: { editable: true },
+                                LastSyncStatus: { editable: false, visible: false, nullable: true },
+                                LastSyncDate: { editable: false, visible: false, nullable: true },
+                                NetworkObjectId: { editable: false, visible: false}
+                            }
+                        }
+                    },
+                    error: function (e) {                       
+                        if (e.errors) {                          
+                            grid = $("#gridSyncTarget").data("kendoGrid");
+                            grid.one("dataBinding", function (e) {
+                                e.preventDefault();   // cancel grid rebind if error occurs                             
+                            });                           
+                            for (var error in e.errors) {                                
+                                showMessage(grid.editable.element, error, e.errors[error].errors);                               
+                            }
+                        }                                            
+                    },
+                    requestEnd: function (e) {                                                               
+                        if (e.type != "read")
+                        {                        
+                            //Check is the response contains Errors
+                            if (e.response != undefined && e.response.Errors != undefined) {                            
+                            }
+                            else {
+                                if (e.type === "update") {
+                                    var name = e.response.TargetName;
+                                    if (name == undefined) {
+                                        name = "";
+                                    }
+                                    statusMessage(true, "Updated the Target " + name);
+                                }
+                                else if (e.type === "create") {
+                                    var name = e.response.TargetName;
+                                    if (name == undefined) {
+                                        name = "";
+                                    }
+                                    statusMessage(true, "Created the Target " + name);
+                                }
+                                refreshTargets();
+                            }
+                        }                                                            
+                    }
+                },
+                sortable: true,
+                filterable: {
+                    operators: {
+                        string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                    }
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: __gridPageSizes
+                },
+                dataBound: addExtraStylingToGrid,  // this is where the hover effect function is bound to grid
+                editable: {
+                    mode: "popup",
+                    template: kendo.template($("#popup_editor").html())
+                },
+                columns: [{ field: "MenuSyncTargetId",hidden:true , sortable: false, filterable: false },
+                              { field: "TargetName", width: 50, title: "Target Name" },
+                              { field: "ChannelNameList", width: 50, title: "Channels" },
+                              { field: "URL", width: 100, title: "URL" }
+                              //{ field: "Token", width: 50, title: "Token" }
+                             @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                             {
+                                 @:, { command: [{ text: { update: "Save", cancel: "Cancel" }, name: "edit" }], width: 90, title: "Actions" }
+                            }
+                ]
+            }).data("kendoGrid");
+
+     });  
+    
+        $("#btnTargetRefresh").click( function()
+        {
+            var confirmationMsg = "Are you sure you want to refresh the Target?";
+            confirmWindow("Refresh confirm", confirmationMsg, function () { }, "400px", "OK", "Cancel", function (data) {
+                if (data === true) {
+                    $.ajax({
+                        url: '/menusync/RefreshTargets',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data, textStatus, jqXHR) {
+                            if (data.status) {
+                                refreshTargets();
+                            }
+                            statusMessage(data.status, data.lastActionResult);
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            statusMessage(false, thrownError);
+                        }
+                    });
+                }
+            });
+        });
+
+     //target delete
+     $("#btnTargetDelete").click(function () {
+
+         var grid = $("#gridSyncTarget").data("kendoGrid");
+
+         var targetsChecked = grid.tbody.find(":checkbox:checked");
+         var targetsCheckedCnt = targetsChecked.length;
+
+         if (targetsCheckedCnt == 0) {
+             statusMessage("Info", "Select one or more targets to delete");
+             return;
+         }
+
+         var targetList = new Array();
+         targetsChecked.each(function () {
+             targetList.push(grid.dataItem($(this).closest("tr")));
+         });        
+
+         deleteTargets(targetList);
+     });
+
+     // Target delete
+     function deleteTarget(e) {
+         e.preventDefault();
+         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+         var confirmationMsg = "Are you sure you want to delete the Target: '" + dataItem.TargetName + "' ?";
+         confirmWindow("Delete confirm", confirmationMsg, function () { }, "400px", "OK", "Cancel", function (data) {
+             if (data === true) {
+                 //This approach is followed to make use of existing methods: deleteTargets & '/menusync/DeleteTargets' methods
+                 var selectedTarget = new Array();
+                 selectedTarget.push(dataItem);
+                 deleteTargets(selectedTarget);
+             }
+         });
+     }
+
+     function deleteTargets(targetList) {
+         $.ajax({
+             url: '/menusync/DeleteTargets',
+             type: 'POST',
+             dataType: 'json',
+             data: { targets: JSON.stringify(targetList) },
+             success: function (data, textStatus, jqXHR) {
+                 if (data.status) {
+                     refreshTargets();
+                 }
+                 statusMessage(data.status, data.lastActionResult);
+             },
+             error: function (xhr, ajaxOptions, thrownError) {
+                 statusMessage(false, thrownError);
+             }
+         });
+     }
+
+     function restoreSelectionSub() {
+         try {
+             selectedId = sessionStorage.SelectedTreeNodeId_Target;
+         }
+         catch (e) {
+             alert(e);
+         }
+     }
+
+     function storeTreeNodeExpansionNSelectionSub(selectedNode) {
+         try {
+             sessionStorage.ExpansionSequence_Target = _expansionSequence;
+             sessionStorage.SelectedTreeNodeId_Target = selectedId;
+         }
+         catch (e) {
+             alert(e);
+         }
+     }
+
+     function handleTreeDataBoundSub(e) {
+         //Do Nothing
+     }
+
+     function handleTreeNodeSelectionSub(selectedNode) {
+         try {
+             refreshTargets();
+
+             _networkObjectType = treeViewCtrl.dataItem(selectedNode).ItemType;
+
+             _isValidTreeNodeSelected = false;
+             if (_networkObjectType != undefined && _networkObjectType == NetworkObjectType.Brand) {
+                 //Enable 'Add New Target' button
+                 $(".k-grid-add :first").removeClass('disabledAnchor').removeClass("k-state-disabled");
+                 $(".k-grid-add :first").removeAttr('disabled', 'disabled');
+                 _isValidTreeNodeSelected = true;
+                 if($("btnTargetRefresh") != undefined)
+                 {
+                     $("#btnTargetRefresh").hide();
+                 }
+             }
+             else if (_networkObjectType != undefined && _networkObjectType == NetworkObjectType.Root)
+             {  
+                 if($("btnTargetRefresh") != undefined)
+                 {
+                    $("#btnTargetRefresh").show();
+                 }
+             }
+
+             $('#tvSelNameTargets').html('Targets under <b>' + selectedName + '</b>');
+         }
+         catch (e) {
+             alert(e);
+         }
+     }
+
+     //refresh Targets
+     function refreshTargets() {
+         var grid = $("#gridSyncTarget").data("kendoGrid").dataSource;
+         grid.transport.options.read.data.networkObjectId = selectedId;
+         grid.read();
+     }
+
+     function showMessage(container, name, errors) {
+         //add the validation message to the form
+         container.find("[data-valmsg-for=" + name + "]")
+             .replaceWith($(validationMessageTmpl({ field: name, message: errors[0] })))
+     }
+     //on tag close
+     function onWinClose(e) {
+     }
+     $(".k-grid-add :first").click(function () {       
+         if (selectedId == undefined) {
+             return false;
+         }
+         else {
+             _isNewTargetToAdd = true;
+         }
+     });
+
+     //Resize Kendo TreeView And/Or Kendo Grid
+     $(window).load(function () { triggerResizeTree(); });
+     $(window).resize(function () { triggerResize(); });
+    </script>
+
+    <style>
+        div.k-edit-buttons {
+            border: none !important;
+        }
+
+        .field-validation-error {
+            color: #e80c4d;
+            font-weight: normal !important ;
+        }
+    </style>
+
+}

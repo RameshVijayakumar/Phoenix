@@ -1,0 +1,140 @@
+﻿@model Phoenix.Web.Models.POSAdminModel
+@{
+    ViewBag.Title = "POS Items";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4>POS Items</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="font-size: 75%;" class="resizable-tree"></div>
+            @*<div id="tv2"  style="font-size:75%;"></div>*@
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <span id="tvSelNameItems"></span>&nbsp;&nbsp;&nbsp;
+                    <span id="spFewReturned" style="display:none;"><br />NOTE: Maximum of 5000 records are displayed below. Use filters to retrieve specific information</span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <a class="btn btn-default pull-right" id="btnCreatePOSItem"><i class="glyphicon glyphicon-th-large"></i>Create POS</a>
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridPOSItemInfo" style="font-size: 75%;" class="resizable-grid"></div>
+                </div>
+            </div>            @Html.Partial("_POSItemDetail")
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/positemselect")
+    @Scripts.Render("~/bundles/poscommon")
+    <script>
+    var grid = $("#gridPOSItemInfo").kendoGrid({
+        dataSource: {
+            type: "json",
+            transport: {
+                read: {
+                    url: "/item/GetPOSItemList",
+                    data: { 'brandId': selectedId, 'excludeNoPLUItems': false, 'includeItemExtraProperties': true, 'gridType': 'pos', 'breakcache': new Date().getTime() },
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+
+                },
+            },
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverSorting: true,
+            serverFiltering: true,
+            serverPaging: true,
+            pageSize: __gridDefaultPageSize,
+            requestEnd: function (e) {
+                if (e.type == "read") {
+
+                    //Check is the response contains Errors
+                    if (e.response != null && e.response.Errors != undefined) {
+                    }
+                    else {
+                        if (e.response != null) {
+                            if (e.response.onlyfewReturned == true) {
+                                $('#spFewReturned').show();
+                            }
+                            else {
+                                $('#spFewReturned').hide();
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        dataBound: onDataBound,
+        sortable: true,
+        filterable: {
+            operators: {
+                string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+            }
+        },
+        pageable: {
+            refresh: true,
+            pageSizes: __gridPageSizes
+        },
+        selectable: 'row',
+        filterMenuInit : kendoFilterWithEmptyFieldInit,
+        columns: [
+            { field: "DisplayName", width: 80, type: "string", title: "Display Name" },
+            { field: "ItemName", width: 80, type: "string", title: "Internal Name" },
+            { field: "POSItemName", width: 80, type: "string", title: "POS Name" },
+            { field: "BasePLU", width: 40, type: "number", title: "PLU", format: "{0:0}",filterable: {
+                ui: function (element) {
+                    element.kendoNumericTextBox({
+                        format: "{0:0}",
+                        min:0
+                    });
+                }
+            }
+            },
+            { field: "AlternatePLU", width: 40, type: "string", title: "Alternate ID" },
+            {
+                command: [{ text: "View", click: viewPOSItem, name: "view" }
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                  {
+                        @:, { text: "Edit", click: editPOSItem, name: "edit" }
+                        @:, { text: "Delete", click: deletePOS, name: "delete" }
+                        @:, { text: "Edit Master", click: editMasterItem, name: "editMaster" }
+                  }
+                    ], width: "100px", title: "Actions"
+                }
+            ]
+        })
+            .data("kendoGrid");
+
+        //Reload the filter n sort options
+        var state = JSON.parse(sessionStorage.POSItemListGridState);
+        if (state) {
+            if (state.filter) {
+                parseFilterDates(state.filter, grid.dataSource.options.schema.model.fields);
+            }
+            state.page = 1;
+            //grid.dataSource.page(1);
+            grid.dataSource.query(state);
+        }
+        else {
+            grid.dataSource.page(1);
+            //grid.dataSource.read();
+        }
+    </script>
+}

@@ -1,0 +1,10 @@
+﻿@if (Request.IsAuthenticated) {
+    <div>@using (Html.BeginForm("SignOut", "SignOut", FormMethod.Post, new { id = "logoutForm" }))
+            {
+                @Html.AntiForgeryToken()
+            }</div>
+      <div id="loginDiv"> Logged in as: @User.Identity.Name&nbsp;&nbsp;|&nbsp;&nbsp;@Html.ActionLink("Log out", "SignOut", "SignOut", routeValues: null, htmlAttributes: new { id = "logoutLink" }) </div>
+   
+} else {
+    <div id="loginDiv">@Html.ActionLink("Log in", "Index", "Home", routeValues: null, htmlAttributes: new { id = "loginLink" })</div>
+}

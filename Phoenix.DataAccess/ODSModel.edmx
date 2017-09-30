@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="PhoenixODSModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="ODSIngredient">
+          <Key>
+            <PropertyRef Name="IngredientId" />
+          </Key>
+          <Property Name="IngredientId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="RecipeId" Type="int" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="StarChefGUID" Type="uniqueidentifier" />
+          <Property Name="Cost" Type="smallmoney" Nullable="false" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="6" Nullable="false" />
+          <Property Name="UnitOfMeasureId" Type="int" />
+        </EntityType>
+        <EntityType Name="ODSPOSData">
+          <Key>
+            <PropertyRef Name="POSDataId" />
+          </Key>
+          <Property Name="POSDataId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="PLU" Type="int" Nullable="false" />
+          <Property Name="ItemName" Type="varchar" MaxLength="64" Nullable="false" />
+          <Property Name="IsModifier" Type="bit" Nullable="false" />
+          <Property Name="IsSold" Type="bit" Nullable="false" />
+          <Property Name="ScreenGroup" Type="int" Nullable="false" />
+          <Property Name="ScreenGroupName" Type="varchar" MaxLength="64" Nullable="false" />
+          <Property Name="ScreenPos" Type="int" Nullable="false" />
+          <Property Name="BasePrice" Type="smallmoney" Nullable="false" />
+          <Property Name="Chain1" Type="int" Nullable="false" />
+          <Property Name="Chain2" Type="int" Nullable="false" />
+          <Property Name="Chain3" Type="int" Nullable="false" />
+          <Property Name="Chain4" Type="int" Nullable="false" />
+          <Property Name="Chain5" Type="int" Nullable="false" />
+          <Property Name="DeptNo" Type="int" Nullable="false" />
+          <Property Name="DeptName" Type="varchar" MaxLength="64" Nullable="false" />
+          <Property Name="CookTime" Type="int" Nullable="false" />
+          <Property Name="TaxTypeIds" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="ComboPrice" Type="smallmoney" Nullable="false" />
+          <Property Name="InsertedDate" Type="datetime" Nullable="false" />
+          <Property Name="IrisId" Type="bigint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="ODSRecipe">
+          <Key>
+            <PropertyRef Name="RecipeId" />
+          </Key>
+          <Property Name="RecipeId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ParentRecipeId" Type="int" />
+          <Property Name="Name" Type="varchar" MaxLength="128" Nullable="false" />
+          <Property Name="StarChefGUID" Type="uniqueidentifier" />
+          <Property Name="Servings" Type="int" Nullable="false" />
+          <Property Name="Cost" Type="smallmoney" Nullable="false" />
+          <Property Name="Quantity" Type="decimal" Precision="18" Scale="6" Nullable="false" />
+          <Property Name="UnitOfMeasureId" Type="int" />
+          <Property Name="LastUpdated" Type="datetime" />
+        </EntityType>
+        <EntityType Name="ODSUnitOfMeasure">
+          <Key>
+            <PropertyRef Name="UnitOfMeasureId" />
+          </Key>
+          <Property Name="UnitOfMeasureId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UnitOfMeasure" Type="varchar" MaxLength="64" Nullable="false" />
+        </EntityType>
+        <Association Name="ODSIngredient_Recipe_FK">
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="1" />
+          <End Role="ODSIngredient" Type="Self.ODSIngredient" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSRecipe">
+              <PropertyRef Name="RecipeId" />
+            </Principal>
+            <Dependent Role="ODSIngredient">
+              <PropertyRef Name="RecipeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSIngredient_UnitOfMeasure_FK">
+          <End Role="ODSUnitOfMeasure" Type="Self.ODSUnitOfMeasure" Multiplicity="0..1" />
+          <End Role="ODSIngredient" Type="Self.ODSIngredient" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSUnitOfMeasure">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Principal>
+            <Dependent Role="ODSIngredient">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSRecipe_Recipe_FK">
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="0..1" />
+          <End Role="ODSRecipe1" Type="Self.ODSRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSRecipe">
+              <PropertyRef Name="RecipeId" />
+            </Principal>
+            <Dependent Role="ODSRecipe1">
+              <PropertyRef Name="ParentRecipeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSRecipe_UnitOfMeasure_FK">
+          <End Role="ODSUnitOfMeasure" Type="Self.ODSUnitOfMeasure" Multiplicity="0..1" />
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSUnitOfMeasure">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Principal>
+            <Dependent Role="ODSRecipe">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="PhoenixODSModelStoreContainer">
+          <EntitySet Name="ODSIngredient" EntityType="Self.ODSIngredient" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ODSPOSData" EntityType="Self.ODSPOSData" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ODSRecipe" EntityType="Self.ODSRecipe" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ODSUnitOfMeasure" EntityType="Self.ODSUnitOfMeasure" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="ODSIngredient_Recipe_FK" Association="Self.ODSIngredient_Recipe_FK">
+            <End Role="ODSRecipe" EntitySet="ODSRecipe" />
+            <End Role="ODSIngredient" EntitySet="ODSIngredient" />
+          </AssociationSet>
+          <AssociationSet Name="ODSIngredient_UnitOfMeasure_FK" Association="Self.ODSIngredient_UnitOfMeasure_FK">
+            <End Role="ODSUnitOfMeasure" EntitySet="ODSUnitOfMeasure" />
+            <End Role="ODSIngredient" EntitySet="ODSIngredient" />
+          </AssociationSet>
+          <AssociationSet Name="ODSRecipe_Recipe_FK" Association="Self.ODSRecipe_Recipe_FK">
+            <End Role="ODSRecipe" EntitySet="ODSRecipe" />
+            <End Role="ODSRecipe1" EntitySet="ODSRecipe" />
+          </AssociationSet>
+          <AssociationSet Name="ODSRecipe_UnitOfMeasure_FK" Association="Self.ODSRecipe_UnitOfMeasure_FK">
+            <End Role="ODSUnitOfMeasure" EntitySet="ODSUnitOfMeasure" />
+            <End Role="ODSRecipe" EntitySet="ODSRecipe" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="PhoenixODSModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="ODSIngredient">
+          <Key>
+            <PropertyRef Name="IngredientId" />
+          </Key>
+          <Property Name="IngredientId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="RecipeId" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="128" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StarChefGUID" Type="Guid" />
+          <Property Name="Cost" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="6" Nullable="false" />
+          <Property Name="UnitOfMeasureId" Type="Int32" />
+          <NavigationProperty Name="ODSRecipe" Relationship="Self.ODSIngredient_Recipe_FK" FromRole="ODSIngredient" ToRole="ODSRecipe" />
+          <NavigationProperty Name="ODSUnitOfMeasure" Relationship="Self.ODSIngredient_UnitOfMeasure_FK" FromRole="ODSIngredient" ToRole="ODSUnitOfMeasure" />
+        </EntityType>
+        <EntityType Name="ODSRecipe">
+          <Key>
+            <PropertyRef Name="RecipeId" />
+          </Key>
+          <Property Name="RecipeId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ParentRecipeId" Type="Int32" />
+          <Property Name="Name" Type="String" MaxLength="128" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="StarChefGUID" Type="Guid" />
+          <Property Name="Servings" Type="Int32" Nullable="false" />
+          <Property Name="Cost" Type="Decimal" Precision="10" Scale="4" Nullable="false" />
+          <Property Name="Quantity" Type="Decimal" Precision="18" Scale="6" Nullable="false" />
+          <Property Name="UnitOfMeasureId" Type="Int32" />
+          <Property Name="LastUpdated" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="ODSIngredients" Relationship="Self.ODSIngredient_Recipe_FK" FromRole="ODSRecipe" ToRole="ODSIngredient" />
+          <NavigationProperty Name="ODSRecipe1" Relationship="Self.ODSRecipe_Recipe_FK" FromRole="ODSRecipe" ToRole="ODSRecipe1" />
+          <NavigationProperty Name="ODSRecipe2" Relationship="Self.ODSRecipe_Recipe_FK" FromRole="ODSRecipe1" ToRole="ODSRecipe" />
+          <NavigationProperty Name="ODSUnitOfMeasure" Relationship="Self.ODSRecipe_UnitOfMeasure_FK" FromRole="ODSRecipe" ToRole="ODSUnitOfMeasure" />
+        </EntityType>
+        <EntityType Name="ODSUnitOfMeasure">
+          <Key>
+            <PropertyRef Name="UnitOfMeasureId" />
+          </Key>
+          <Property Name="UnitOfMeasureId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UnitOfMeasure" Type="String" MaxLength="64" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="ODSIngredients" Relationship="Self.ODSIngredient_UnitOfMeasure_FK" FromRole="ODSUnitOfMeasure" ToRole="ODSIngredient" />
+          <NavigationProperty Name="ODSRecipes" Relationship="Self.ODSRecipe_UnitOfMeasure_FK" FromRole="ODSUnitOfMeasure" ToRole="ODSRecipe" />
+        </EntityType>
+        <Association Name="ODSIngredient_Recipe_FK">
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="1" />
+          <End Role="ODSIngredient" Type="Self.ODSIngredient" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSRecipe">
+              <PropertyRef Name="RecipeId" />
+            </Principal>
+            <Dependent Role="ODSIngredient">
+              <PropertyRef Name="RecipeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSIngredient_UnitOfMeasure_FK">
+          <End Role="ODSUnitOfMeasure" Type="Self.ODSUnitOfMeasure" Multiplicity="0..1" />
+          <End Role="ODSIngredient" Type="Self.ODSIngredient" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSUnitOfMeasure">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Principal>
+            <Dependent Role="ODSIngredient">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSRecipe_Recipe_FK">
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="0..1" />
+          <End Role="ODSRecipe1" Type="Self.ODSRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSRecipe">
+              <PropertyRef Name="RecipeId" />
+            </Principal>
+            <Dependent Role="ODSRecipe1">
+              <PropertyRef Name="ParentRecipeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="ODSRecipe_UnitOfMeasure_FK">
+          <End Role="ODSUnitOfMeasure" Type="Self.ODSUnitOfMeasure" Multiplicity="0..1" />
+          <End Role="ODSRecipe" Type="Self.ODSRecipe" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ODSUnitOfMeasure">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Principal>
+            <Dependent Role="ODSRecipe">
+              <PropertyRef Name="UnitOfMeasureId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="PhoenixODSContext" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="ODSIngredients" EntityType="Self.ODSIngredient" />
+          <EntitySet Name="ODSRecipes" EntityType="Self.ODSRecipe" />
+          <EntitySet Name="ODSUnitOfMeasures" EntityType="Self.ODSUnitOfMeasure" />
+          <AssociationSet Name="ODSIngredient_Recipe_FK" Association="Self.ODSIngredient_Recipe_FK">
+            <End Role="ODSRecipe" EntitySet="ODSRecipes" />
+            <End Role="ODSIngredient" EntitySet="ODSIngredients" />
+          </AssociationSet>
+          <AssociationSet Name="ODSIngredient_UnitOfMeasure_FK" Association="Self.ODSIngredient_UnitOfMeasure_FK">
+            <End Role="ODSUnitOfMeasure" EntitySet="ODSUnitOfMeasures" />
+            <End Role="ODSIngredient" EntitySet="ODSIngredients" />
+          </AssociationSet>
+          <AssociationSet Name="ODSRecipe_Recipe_FK" Association="Self.ODSRecipe_Recipe_FK">
+            <End Role="ODSRecipe" EntitySet="ODSRecipes" />
+            <End Role="ODSRecipe1" EntitySet="ODSRecipes" />
+          </AssociationSet>
+          <AssociationSet Name="ODSRecipe_UnitOfMeasure_FK" Association="Self.ODSRecipe_UnitOfMeasure_FK">
+            <End Role="ODSUnitOfMeasure" EntitySet="ODSUnitOfMeasures" />
+            <End Role="ODSRecipe" EntitySet="ODSRecipes" />
+          </AssociationSet>
+          <EntitySet Name="ODSPOSDatas" EntityType="PhoenixODSModel.ODSPOSData" />
+        </EntityContainer>
+        <EntityType Name="ODSPOSData">
+          <Key>
+            <PropertyRef Name="POSDataId" />
+          </Key>
+          <Property Name="POSDataId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="PLU" Type="Int32" Nullable="false" />
+          <Property Name="ItemName" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="IsModifier" Type="Boolean" Nullable="false" />
+          <Property Name="IsSold" Type="Boolean" Nullable="false" />
+          <Property Name="ScreenGroup" Type="Int32" Nullable="false" />
+          <Property Name="ScreenGroupName" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="ScreenPos" Type="Int32" Nullable="false" />
+          <Property Name="BasePrice" Type="Decimal" Nullable="false" Precision="10" Scale="4" />
+          <Property Name="Chain1" Type="Int32" Nullable="false" />
+          <Property Name="Chain2" Type="Int32" Nullable="false" />
+          <Property Name="Chain3" Type="Int32" Nullable="false" />
+          <Property Name="Chain4" Type="Int32" Nullable="false" />
+          <Property Name="Chain5" Type="Int32" Nullable="false" />
+          <Property Name="DeptNo" Type="Int32" Nullable="false" />
+          <Property Name="DeptName" Type="String" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="CookTime" Type="Int32" Nullable="false" />
+          <Property Name="TaxTypeIds" Type="String" Nullable="false" MaxLength="128" FixedLength="false" Unicode="false" />
+          <Property Name="ComboPrice" Type="Decimal" Nullable="false" Precision="10" Scale="4" />
+          <Property Name="InsertedDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="IrisId" Type="Int64" Nullable="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="PhoenixODSModelStoreContainer" CdmEntityContainer="PhoenixODSContext">
+          <EntitySetMapping Name="ODSIngredients">
+            <EntityTypeMapping TypeName="PhoenixODSModel.ODSIngredient">
+              <MappingFragment StoreEntitySet="ODSIngredient">
+                <ScalarProperty Name="IngredientId" ColumnName="IngredientId" />
+                <ScalarProperty Name="RecipeId" ColumnName="RecipeId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="StarChefGUID" ColumnName="StarChefGUID" />
+                <ScalarProperty Name="Cost" ColumnName="Cost" />
+                <ScalarProperty Name="Quantity" ColumnName="Quantity" />
+                <ScalarProperty Name="UnitOfMeasureId" ColumnName="UnitOfMeasureId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ODSRecipes">
+            <EntityTypeMapping TypeName="PhoenixODSModel.ODSRecipe">
+              <MappingFragment StoreEntitySet="ODSRecipe">
+                <ScalarProperty Name="RecipeId" ColumnName="RecipeId" />
+                <ScalarProperty Name="ParentRecipeId" ColumnName="ParentRecipeId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="StarChefGUID" ColumnName="StarChefGUID" />
+                <ScalarProperty Name="Servings" ColumnName="Servings" />
+                <ScalarProperty Name="Cost" ColumnName="Cost" />
+                <ScalarProperty Name="Quantity" ColumnName="Quantity" />
+                <ScalarProperty Name="UnitOfMeasureId" ColumnName="UnitOfMeasureId" />
+                <ScalarProperty Name="LastUpdated" ColumnName="LastUpdated" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ODSUnitOfMeasures">
+            <EntityTypeMapping TypeName="PhoenixODSModel.ODSUnitOfMeasure">
+              <MappingFragment StoreEntitySet="ODSUnitOfMeasure">
+                <ScalarProperty Name="UnitOfMeasureId" ColumnName="UnitOfMeasureId" />
+                <ScalarProperty Name="UnitOfMeasure" ColumnName="UnitOfMeasure" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ODSPOSDatas">
+            <EntityTypeMapping TypeName="PhoenixODSModel.ODSPOSData">
+              <MappingFragment StoreEntitySet="ODSPOSData">
+                <ScalarProperty Name="IrisId" ColumnName="IrisId" />
+                <ScalarProperty Name="InsertedDate" ColumnName="InsertedDate" />
+                <ScalarProperty Name="ComboPrice" ColumnName="ComboPrice" />
+                <ScalarProperty Name="TaxTypeIds" ColumnName="TaxTypeIds" />
+                <ScalarProperty Name="CookTime" ColumnName="CookTime" />
+                <ScalarProperty Name="DeptName" ColumnName="DeptName" />
+                <ScalarProperty Name="DeptNo" ColumnName="DeptNo" />
+                <ScalarProperty Name="Chain5" ColumnName="Chain5" />
+                <ScalarProperty Name="Chain4" ColumnName="Chain4" />
+                <ScalarProperty Name="Chain3" ColumnName="Chain3" />
+                <ScalarProperty Name="Chain2" ColumnName="Chain2" />
+                <ScalarProperty Name="Chain1" ColumnName="Chain1" />
+                <ScalarProperty Name="BasePrice" ColumnName="BasePrice" />
+                <ScalarProperty Name="ScreenPos" ColumnName="ScreenPos" />
+                <ScalarProperty Name="ScreenGroupName" ColumnName="ScreenGroupName" />
+                <ScalarProperty Name="ScreenGroup" ColumnName="ScreenGroup" />
+                <ScalarProperty Name="IsSold" ColumnName="IsSold" />
+                <ScalarProperty Name="IsModifier" ColumnName="IsModifier" />
+                <ScalarProperty Name="ItemName" ColumnName="ItemName" />
+                <ScalarProperty Name="PLU" ColumnName="PLU" />
+                <ScalarProperty Name="POSDataId" ColumnName="POSDataId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="true" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

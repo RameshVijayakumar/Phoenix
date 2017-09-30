@@ -1,0 +1,18 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    ViewBag.Title = "Error";
+}
+<div class="container">
+    <br />
+    <div class="alert alert-danger">
+        <span class="label">Error</span>
+        @Html.Raw(ViewBag.Message)
+        
+        @if (ViewBag.ShowReturnToLogin)
+        {
+              @Html.ActionLink("Log in", "Index", "Home", routeValues: null, htmlAttributes: new { id = "loginLink" })
+        }
+
+    </div>
+</div>

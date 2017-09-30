@@ -1,0 +1,214 @@
+﻿@{
+    ViewBag.Title = "POS Item Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+   @Html.Partial("_PageHeader", (string)ViewBag.Title)
+
+    <div class="row">
+        <div class="col-xs-8">
+            @Html.Partial("_SiteSelector")
+        </div>
+        <div class="col-xs-4">
+            <h5>Uploaded On</h5>
+            <span class="input uneditable-input form-control" id="inpCurrentUploadDate">Upload Date...</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">&nbsp;</div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <div id="errorSiteMessage" class="alert alert-danger"></div>
+            <div id="successSiteMessage" class="alert alert-success"></div>
+            <div id="gridODS" style="font-size:75%;" class="resizable-grid"></div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_NetworkObjectWindow")
+
+@section scripts{
+
+    <script type="text/javascript" src="~/Scripts/mapdatacommon.js"></script>
+
+
+    <script type="text/javascript">
+        var currNetworkObjectId = 0;
+ 
+        $(function () {
+            highlightMenubar("positem","ods");
+            initUIElements();
+            setupNetObjectTreeview($("#tvNetObjects"), $('#lblSelectedNetObjName'), $('#inpSelectedNetObjId'), tvNetOnSelect );
+
+            $("#windowNetObjects").kendoWindow({
+                width: "600px",
+                height: "550px",
+                title: "Select a Site...",
+                modal: true,
+                animation: false,
+                visible: false,
+                close: function () {
+
+                    $('#errorSiteMessage').hide();
+                    $('#errorSiteMessage').text("");
+
+                    // render the POS grid if its not rendered already
+                    if (currNetworkObjectId == null || (currNetworkObjectId != null && currNetworkObjectId == '0')) {
+                        $('#gridODS').html('');
+                        return;
+                    }
+                    LoadGrid();
+                }
+            });
+
+            $('#infoMessage').hide();
+
+            currNetworkObjectId = sessionStorage.getItem('ni.id');
+            if (currNetworkObjectId != null) {
+                $('#inpSelectedSiteName').text(sessionStorage.getItem('ni.name'));
+                if (parseInt(sessionStorage.getItem('ni.type')) == NetworkTypes.Site) {
+                    LoadGrid();
+                }
+                else {
+                    $('#errorSiteMessage').text("Warning: ODS POS Details are only available for Sites.");
+                    $('#errorSiteMessage').show();
+                }
+            }
+        });
+
+  
+        function initUIElements() {
+            // hide status display
+            $("#errorGroupMessage").hide();
+            $('#successGroupMessage').hide();
+            $("#errorSiteMessage").hide();
+            $('#successSiteMessage').hide();
+        }
+
+        function LoadGrid() {
+            var selected = false;
+            // site grid
+            $("#gridODS").kendoGrid({
+                dataSource: {
+                    serverSorting: true,
+                    serverFiltering: true,
+                    serverPaging: true,
+                    pageSize: 100,
+                    type: "json",
+                    transport: {
+                        read: {
+                            url: "/datamap/GetSiteODSData",
+                            dataType: "json",
+                            type: "GET",
+                            contentType: "application/json; charset=utf-8",
+                             data: { 'networkObjectId': currNetworkObjectId }
+
+                        }
+                    },
+                    schema: {
+                        data: "data", // records are returned in the "data" field of the response
+                        total: "total" // total number of records is in the "total" field of the response
+                    },
+                    serverPaging: true,
+                    pageSize: 100
+                },
+                groupable: true,
+                sortable: true,
+                filterable: {
+                    operators: {
+                        string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+                    }
+                },
+                pageable: {
+                    refresh: true,
+                    pageSizes: [100, 150, 200]
+                },
+                columns: [
+                    { field: "ItemName", width: 100, title: "Item Name", type: "string" },
+                    { field: "PLU", width: 60, title: "PLU", type: "number" },
+                    { field: "IsModifier", width: 70, title: "Is Modifier", type: "boolean" },
+                    { field: "IsSold", width: 55, title: "Is Sold", type: "boolean" },
+                    { field: "ScreenGroup", width: 90, title: "Screen Group", type: "number" },
+                    { field: "ScreenGroupName", width: 120, title: "Screen Group Name", type: "string" },
+                    { field: "ScreenPos", width: 95, title: "Screen Position", type: "number" },
+                    { field: "BasePrice", width: 70, title: "BasePrice", format: "{0:c}", type: "number" },
+                    { field: "Chain1", width: 60, title: "Chain 1", type: "number" },
+                    { field: "Chain2", width: 60, title: "Chain 2", type: "number" },
+                    { field: "Chain3", width: 60, title: "Chain 3", type: "number" },
+                    { field: "Chain4", width: 60, title: "Chain 4", type: "number" },
+                    { field: "Chain5", width: 60, title: "Chain 5", type: "number" },
+                    { field: "DeptNo", width: 85, title: "Dept Number", type: "number" },
+                    { field: "DeptName", width: 85, title: "Dept Name", type: "string" },
+                    { field: "CookTime", width: 80, title: "Cook Time", type: "number" },
+                    { field: "TaxTypeIds", width: 80, title: "Tax Type Ids", type: "string" },
+                    { field: "ComboPrice", width: 85, title: "Combo Price", format: "{0:c}", type: "number" }
+                ],
+                dataBound: function () {
+                    scrollToTop(this);
+                    if (!selected) {
+                        selected = true;
+                        if (this._data[0] != undefined && this._data[0] != null) {
+                            var date = new Date(parseInt(this._data[0].InsertedDate.substr(6)));
+                            $('#inpCurrentUploadDate').text(date.toDateString() + " " + date.toLocaleTimeString());
+                        }
+                    }
+                    triggerResizeGrid();
+                }
+            }).data("kendoGrid");
+
+
+
+        }
+
+        $("#btnNetObjSelOK").bind("click", function () {
+
+            if (sessionStorage.getItem('ni.type') != null) {
+                if (parseInt(sessionStorage.getItem('ni.type')) <= NetworkTypes.Market) {
+                    $('#infoMessage').text("Warning: Please select a site.");
+                    $('#infoMessage').show();
+                    return;
+                }
+            }
+            $('#infoMessage').hide();
+            $('#infoMessage').text("");
+            var newNetId = $('#inpSelectedNetObjId').val()
+            currNetworkObjectId = newNetId;
+            $('#inpSelectedSiteName').text($('#lblSelectedNetObjName').text());
+            $("#windowNetObjects").data("kendoWindow").close();
+        });
+
+        $("#btnNetObjSelCancel").bind("click", function () {
+            $("#windowNetObjects").data("kendoWindow").close();
+        });
+
+        $("#btnSiteSelectOpen").bind("click", function () {
+            $("#windowNetObjects").data("kendoWindow").center().open();
+        });
+
+        function tvNetOnSelect(dataItem)
+        {
+                if (dataItem.HasAccess != null) {
+                    if (dataItem.HasAccess == false) {
+                        $('#infoMessage').text("Error: No Access Permissions to " + NetworkTypesToString(dataItem.ItemType));
+                        $('#infoMessage').show();
+                        sessionStorage.setItem('ni.name', "");
+                        sessionStorage.setItem('ni.type', 0);
+                        sessionStorage.setItem('ni.id', "");
+                        sessionStorage.setItem('ni.hasaccess', false);
+                        return;
+                    }
+                }
+                
+                //Set sessionstorage to share across views
+                sessionStorage.setItem('ni.name', dataItem.Name);
+                sessionStorage.setItem('ni.type', dataItem.ItemType);
+                sessionStorage.setItem('ni.id', dataItem.id);
+                sessionStorage.setItem('ni.hasaccess', dataItem.HasAccess);
+        }
+
+        ////Resize Kendo TreeView And/Or Kendo Grid
+        $(window).load(function () { triggerResizeTree(); });
+        $(window).resize(function () { triggerResize(); });
+    </script>
+}

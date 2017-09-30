@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="Phoenix.Web.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
+  <Role name="Phoenix.Web">
+    <Instances count="1" />
+    <ConfigurationSettings>
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="DataConnectionString" value="UseDevelopmentStorage=true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="true" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="pinvoke" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="MIIBpQYJKoZIhvcNAQcDoIIBljCCAZICAQAxggFOMIIBSgIBADAyMB4xHDAaBgNVBAMME1dpbmRvd3MgQXp1cmUgVG9vbHMCEDpsod0Gnw2BR8eyeXIcSckwDQYJKoZIhvcNAQEBBQAEggEAkqrx1bVzSe78KKScr46fOp3ZHrDfxwjzkLWhGIvcv0RaNCfWnrIEUrMcrkQ0V1UErvzuY6Qz2yGPalbyHLVnqUpFAGAVuE8tOuMfFnoXHJIWv96peh5SdL9B0hiBRqxx6SJzFy3FSYwdp+RM6nkarZQYU5hDQIp8fNHjrJXa+NHbETW2swgILtc7/m+Z6fNj/YmyeG2cJ9UXlq3g1UsjzmvdGkOnlCgIqHRnpb8NGIb8DVHU2A8LXGt3JJvoMF5fvDwVwO/U7CtpO9vFeIeW0eXCrEAikhgU6UEN0p8Y/p61WTFDyrk0U58JoUcqcOmWNSOMfdPLIKfTH251LxvK5DA7BgkqhkiG9w0BBwEwFAYIKoZIhvcNAwcECPjJ+Q/iPmDIgBgMyzbPh7bFK3t2x+76O0MFWZn76HmCSqs=" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="2020-02-16T23:59:59.0000000-06:00" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="true" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="zioskconnect" thumbprint="A3EDF9FD4257E4A53B5A071E75904B439CC66786" thumbprintAlgorithm="sha1" />
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="BD835636AE569931E8709DD8C9E77FB8D0726F37" thumbprintAlgorithm="sha1" />
+    </Certificates>
+  </Role>
+</ServiceConfiguration>

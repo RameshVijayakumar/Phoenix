@@ -1,0 +1,56 @@
+﻿<div id="winEntityTags" style="display: none;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <input type="hidden" id="hdnTag" name="hdnTag" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div id="operationStatus" class="statusdiv"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <p id="tvSelectedEntity"></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <label style="font-size: x-small;"><b>Select Tags</b></label>
+                <select id="multiselectTag" data-placeholder="Select tags" style="font-size: 75%; width: 99.4%;" class="multiselectTagCtrl"></select>
+                <span id="spnSaveTag">
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <a class="btn btn-default btn-xs pull-right savefunctionalbtn" id="btnSaveTag" data-loading-text="Saving..."><i class='glyphicon glyphicon-plus'></i><span id="spnSavetxt">Save</span></a>
+                    }
+                </span>
+            </div>
+        </div>
+        @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+        {
+        <hr />
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="form-group">
+                    <label class="control-label"style="font-size: x-small;"><b>Add New Tag</b></label>
+                    <div>
+                        <input type="text" name="txtTag" id="txtTag" maxlength="64" onkeyup="javascript:validateTagName(this)" class="k-input k-textbox" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <a class="btn btn-default btn-xs pull-right-customized savefunctionalbtn" id="btnAddTag" data-loading-text="Saving..."><i class='glyphicon glyphicon-plus'></i><span id="spnAddtxt">Create</span></a>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+<style>
+    .pull-right-customized {
+        float: none;
+        margin-bottom: 10px;
+    }
+</style>

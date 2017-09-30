@@ -1,0 +1,166 @@
+﻿@using Phoenix.Web.Models
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Menu Master</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/bootstrap/css")
+    @*@Scripts.Render("~/bundles/modernizr")*@
+    @Styles.Render("~/Content/kendocss/css")
+    <link href="@string.Format("{0}/{1}", System.Configuration.ConfigurationManager.AppSettings.Get("ZStyleCDN").TrimEnd('/'), "src/zstyle.min.css")" rel="stylesheet" type="text/css">
+</head>
+<body class="body">
+    <div id="divMainMenu" class="pagewrap">
+        <div id="content" class="container">
+            <div class="row">
+                <div class="col-xs-12 no-padding">
+                    <div id="navpurple">
+                        <div class="topColor_purple"></div>
+                        @Html.Partial("_LoginPartial")
+
+                        <ul>
+                            @{var requestUrlLeftPart = Request.Url.GetLeftPart(UriPartial.Authority);}
+                            @if (requestUrlLeftPart != null && requestUrlLeftPart.ToLower().Contains("test"))
+                            {
+                                <li>
+                                    <span style="font-size: x-small; color: black; display: block; position: absolute; top: 30px; left: 150px;">TEST</span>
+                                </li>
+                            }
+                            <li id="logoLeft">
+                                <div>
+                                    <img style="display:block;padding-left:0px;" src="@string.Format("{0}/{1}", System.Configuration.ConfigurationManager.AppSettings.Get("ZStyleCDN").TrimEnd('/'), "img/ziosk_logo.png")" data-rel="titletooltip" width="108" height="32" alt="Ziosk" />
+                                    <img style="display:none;padding-left:0px;" class="actionInprogress" src="~/Content/img/loading-icon-med.gif" />
+                                </div>
+                            </li>
+                            <li class="arrowselected_purp">
+                                <a href="/home/index"><span class="whitetxt">Menu Manager</span></a>
+                                <ul>
+                                    @*<li><a href="https://zcmstest.ziosk.com/">Content Manager</a></li>
+                                        <li><a href="https://surveytest.zioskconnect.com/">Survey Manager</a></li>*@
+                                    <li><a href="https://test.zioskconnect.com/">Portal</a></li>
+                                </ul>
+                            </li>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor") || User.IsInRole("Viewer"))
+                                {
+                                    <li style="padding-left:10px;">
+                                        <a class="site" href="/site/index">Sites</a>
+                                        <ul>
+                                            <li class="siteactions" style="padding-left:10px;"><a href="/Site/SiteActions">Site Actions</a></li>
+                                        </ul>
+                                    </li>
+
+                                    <li>
+                                        <a class="menu" href="/menu/MenuSelect">Menus</a>
+                                        <ul>
+
+                                            @if (AdminService.IsBrandLevelAdmin)
+                                            {
+                                                <li class="divider"></li>
+                                                if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                                {
+                                                    <li><a class="asset" href="/asset/index">Asset Manager</a></li>
+                                                    <li><a class="tag" href="/tag/index">Tag Manager</a></li>
+                                                }
+                                            }
+                                                <li><a class="posmap" href="/datamap/pos">POS Mapping</a></li>
+                                            @if (AdminService.IsBrandLevelAdmin)
+                                            {
+                                                <li><a class="spl" href="/menufeatures/index">Special Notice Manager</a></li>
+                                                <li><a class="mflag" href="/menufeatures/index?t=1B">Modifier Flag Manager</a></li>
+                                            }
+                                        </ul>
+                                    </li>
+                                    if (AdminService.IsBrandLevelAdmin)
+                                    {
+                                        <li>
+                                            <a class="item" href="/item/itemlist">Master Items</a>
+                                            <ul><li><a class="itemposmap" href="/datamap/posadmin">POS Mapping</a></li></ul>
+                                        </li>
+                                        <li>
+                                            <a class="positem" href="/item/POSItems">POS Items</a>
+                                            <ul>
+                                                <li><a class="odsdetail" href="/datamap/odsposdetails">POS Item Detail</a></li>
+                                            </ul>
+                                        </li>
+                                    }
+                                    <li>
+                                        <a class="schedule" href="/schedule/index">Schedules</a>
+                                        <ul>
+                                            <li><a class="cycle" href="/schedule/managecycles">Schedule Cycles</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                                if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                {
+                                    <li>
+                                        <a class="admin" href="#">Admin</a>
+                                        <ul>
+                                            @*<li><a href="/admin/Index">User Maintenance</a></li>*@
+                                            <li><a class="audit" href="/admin/AuditLog">Audit Log</a></li>
+                                            <li><a class="channel" href="/channel/Index">Channel Management</a></li>
+                                            <li><a class="target" href="/menusync/Index">Sync Target Management</a></li>
+                                        </ul>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                    <!--end of nav-->
+                </div>
+            </div>
+        </div>
+        <!--end of content-->
+
+    </div>
+    <!--end of page wrap-->
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryui")
+    @RenderBody()
+
+    <script type="text/kendo-template" id="kendomessage">
+        <div class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error" style="margin: 0.5em; display: block; " data-for="#=field#" data-valmsg-for="#=field#" id="#=field#_validationMessage">
+            <span class="k-icon k-warning"> </span>#=message#<div class="k-callout k-callout-n"></div>
+        </div>
+    </script>
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/kendoui")
+    @Scripts.Render("~/bundles/jquerblockUI")
+    @Scripts.Render("~/bundles/commonjs")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/formatcurrency")
+    @Scripts.Render("~/bundles/maskedinput")
+
+    <div id="cjdi03sge" style="display: none;">Version: @HttpContext.Current.Application["appversion"].ToString() | @HttpContext.Current.Application["lastbuild"].ToString()</div>
+
+    <script type="text/javascript">
+        (function () {
+            $("img[data-rel=titletooltip]").tooltip({ placement: 'bottom', title: $('#cjdi03sge').html() });
+            $(".actionInprogress").css("visibility","hidden");
+        })();
+    </script>
+
+
+    <script>
+        var isUserAuthenticated = '@User.Identity.IsAuthenticated';
+        var highestNetworkLevelAccess = @((int)AdminService.HighestLevelAccess);
+        function ResetSessionTimeOutValue() {
+            $("#hdnSessionTimeOut").val(@(Session.Timeout * 60000));
+        }
+
+        //$(".dropdown-menu").children("li").click(function () {
+        //    if (typeof resetNetworkObjectSelectionSessionState == 'function') {
+        //        resetNetworkObjectSelectionSessionState();
+        //    }
+        //});
+    </script>
+
+    @RenderSection("scripts", required: false)
+    <input type="hidden" id="hdnSessionTimeOut" value="@(Session.Timeout * 60000)" />
+</body>
+</html>

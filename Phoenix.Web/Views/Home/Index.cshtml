@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 welcomecenter">
+            @if (Request.IsAuthenticated)
+            {
+                @Html.Raw(ViewBag.NewUserMessage)
+            }
+                <h3>@Html.Raw(ViewBag.Message)</h3>
+            <h3 class="field-validation-error">@Html.Raw(ViewBag.ErrorMessage)</h3>
+        </div>
+    </div>
+</div>
+@section scripts{
+
+    <script type="text/javascript">
+        if (typeof jQuery == 'undefined') {
+            alert("No jQuery");
+        }
+        $(function () {
+        });
+    </script>
+
+}

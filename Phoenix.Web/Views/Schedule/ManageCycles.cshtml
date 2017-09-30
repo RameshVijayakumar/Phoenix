@@ -1,0 +1,288 @@
+﻿@model Phoenix.Web.Models.SchCycleModel
+@{
+    ViewBag.Title = "Manage Cycles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <h4>Manage Cycles</h4>
+            <!--Sidebar content-->
+            <div id="treeview" style="font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <!--Body content-->
+            <br />
+            <br />
+            <div id="gdSchCycles" style="font-size: 75%;" class="includeValidations resizable-grid"></div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    @Scripts.Render("~/bundles/cycle")
+    <script id="CycleName_template" type="text/x-kendo-template">
+			<div data-container-for="CycleName" class="k-edit-field">
+            <input type="text" class="k-input k-textbox" name="CycleName" required="required" data-bind="value:CycleName" data-unique-msg="Cycle Name should be Unique">
+               @Html.ValidationMessageFor(m => m.CycleName)
+            </div>
+    </script>
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    <script>
+    var selectedId = 0;
+    var selectedNodeType = 0;
+    _expansionSequence = sessionStorage.ExpansionSequence_SchCycle != undefined && sessionStorage.ExpansionSequence_SchCycle != "" ? sessionStorage.ExpansionSequence_SchCycle.split(',') : new Array();
+    _initialExpansionAfterSelectionItemType = _initialExpansionItemType = highestNetworkLevelAccess != undefined && highestNetworkLevelAccess != "" ? parseInt(highestNetworkLevelAccess) : NetworkObjectType.Root; //This is the @@Model.ItemType
+
+    $(function () {
+
+        highlightMenubar("schedule", "cycle");
+        var _root = new kendo.data.HierarchicalDataSource({
+            transport: {
+                read: {
+                    cache: false,
+                    url: "/site/networkObjectTreeView",
+                    dataType: "json",
+                    data: { 'breakcache': new Date().getTime(), 'includeaccess': true, 'networkObjectType': _initialExpansionItemType, 'includeUntilNWType': 3 }
+                }
+            },
+            schema: {
+                model: {
+                    id: "Id",
+                    hasChildren: "HasChildren",
+                    expanded: "expanded",
+                    parentId: "parentId"
+                }
+            }
+        });
+
+        // $("#divDump").html(ko.toJSON(inlineDefault));
+        $("#treeview").kendoTreeView({
+            dataSource: _root,
+            dataImageUrlField: "Image",
+            dataTextField: "Name",
+            loadOnDemand: true, //do NOT recurse with databound to expand nodes
+            dataBound: function (e) {
+                handleTreeDataBound(e);
+            },
+            select: function (e) {
+                handleTreeNodeSelection(e.node);
+            }
+        });
+
+
+        treeViewCtrl = $("#treeview").data("kendoTreeView");
+
+        var _gridOperation = "read";
+        // SchCycles grid
+        $("#gdSchCycles").kendoGrid({
+            cancel: function (e) {
+                var grid = this;
+                var editeduid = e.model.uid;
+
+                var events = e.model._events;
+                var handlerToUnbind = events.change[events.change.length - 1];
+                e.model.unbind("change", handlerToUnbind);
+
+                setTimeout(function () {
+                    var row = grid.table.find("tr[data-uid=" + editeduid + "]");
+                    var model = grid.dataItem(row);
+                    if (e.model.IsCreatedAtThisNetwork === false) {
+                        row.find(".k-grid-edit").hide();
+                        row.find(".k-grid-customD").html("Disable");
+                    }
+                    if (e.model.IsActive === false) {
+                        row.find(".k-grid-customD").hide();
+                    }
+                    else {
+                        row.find(".k-grid-customEnable").hide();
+                    }
+                });
+            },
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        cache: false,
+                        url: "/Schedule/GetScheduleCycles",
+                        data: { 'netId': selectedId, 'breakcache': new Date().getTime() },
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8"
+                    },
+                    create: {
+                        url: "/Schedule/CreateCycle",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    update: {
+                        url: "/Schedule/UpdateCycle",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    parameterMap: function (model, operation) {
+                        _gridOperation = operation;
+                        _validatedErrors = false;
+                        _OperationCompleteWithoutError = true;
+                        if (operation !== "read") {
+                            var result = {};
+
+                            var product = model;
+
+                            for (var member in product) {
+                                if (member == "NetworkObjectId") {
+                                    if (operation == "create") {
+                                        result[member] = selectedId;
+                                    }
+                                    else {
+                                        result[member] = product[member];
+                                    }
+                                }
+                                else {
+                                    result[member] = product[member];
+                                }
+                            }
+                            return result;
+                        }
+                        else {
+                            return model
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+                schema: {
+                    errors: "Errors",
+                    model:
+                    {
+                        id: "SchCycleId",
+                        fields:
+                        {
+                            SchCycleId: { editable: false, nullable: false },
+                            NetworkObjectId: { editable: true },
+                            CycleName: {
+                                editable: true, validation: {
+                                    maxlength: function (input) {
+                                        if (input.is("[name=CycleName]") && input.val().length > 64) {
+                                            input.attr("data-maxlength-msg", "Max length is 64");
+                                            return false;
+                                        }
+                                        return true;
+                                    },
+                                    NonZero: function (input) {
+                                        if (input.is("[name=SortOrder]")) {
+                                            if (input.val() == 0) {
+                                                input.attr("data-NonZero-msg", "The Value cannot be Zero!");
+                                                //return false;
+                                            }
+                                        }
+                                        return true;
+                                    },
+                                    noSpace: function (input) {
+                                        if (input.is("[name=CycleName]")) {
+                                            var text = input.val().trim();
+                                            if (/[\s]/.test(text)) {
+                                                input.attr("data-noSpace-msg", "No space is allowed in Cycle Name");
+                                                return false;
+                                            }
+                                        }
+                                        return true;
+                                    },
+                                    unique: function (input) {
+                                        if (input.is("[name=CycleName]")) {
+                                            var dataItem = $("#gdSchCycles").data("kendoGrid").dataItem(input.closest("tr"));
+                                            var rowId = dataItem.SchCycleId;
+                                            if (!checkForUniquenessOfCycleName(input.val(), rowId)) {
+                                                input.attr("data-unique-msg", "Cycle Name must be unique");
+                                                return false;
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                }
+                            },
+                            SortOrder: { editable: false }
+                        }
+                    }
+                },
+                error: function (args) {
+                    if (args.errors) {
+                        grid = $("#gdSchCycles").data("kendoGrid");
+                        grid.one("dataBinding", function (e) {
+                            e.preventDefault();   // cancel grid rebind if error occurs
+
+                            var errorMessage = "";
+                            for (var error in args.errors) {
+                                //kendoGridShowMessage(grid.editable.element, error, args.errors[error].errors);
+                                errorMessage = errorMessage + args.errors[error].errors[0]
+                            }
+                            statusMessage(false, errorMessage);
+                        });
+                    }
+                },
+                requestEnd: function (e) {
+                    if (e.type != "read") {
+
+                        //Check is the response contains Errors
+                        if (e.response != null && e.response.Errors != undefined) {
+                        }
+                        else {
+                            var name = "";
+                            if (e.response != null && e.response.CycleName != undefined) {
+                                name = e.response.CycleName;
+                            }
+                            if (e.type === "update") {
+                                statusMessage(true, "Updated the Cycle " + name);
+                            }
+                            else if (e.type === "create") {
+                                statusMessage(true, "Created the Cycle " + name);
+                            }
+                            var grid = $("#gdSchCycles").data("kendoGrid").dataSource;
+                            grid.read();
+                        }
+                    }
+                }
+            },
+            sortable: true,
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                          {
+                @:toolbar: [{ text: "Create Cycle", name: "create" }],
+                }
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            dataBound: onGridSchCycleDataBound,  // this is where the visiblity button are taken care
+
+            editable: {
+                mode: 'inline',
+                confirmation: false
+            },
+            columns: [
+                { field: "SchCycleId", width: 1, title: "Id", hidden: true },
+                { field: "CycleName", title: "Name", width: 100, editorTemplate: "CycleName_template" }
+               // { field: "SortOrder", title: "Position", width: 50, format: "{0:0}", editorTemplate : "Position"}
+                //{ field: "SchCycleId", width: 60, title: "Custom Actionc", template: "<a href='\\#'class='k-grid-edit'> Edit</a> <a href='\\#'class='k-grid-delete'> Delete</a>" },
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                    {
+                        @:, {command: [{ text: { update: "Save", cancel: "Cancel" }, name: "edit" }, { text: "Disable", click: disableCycle, name: "disable" }, { text: "Enable", click: enableCycle, name: "customEnable" }
+                        if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                        {
+                            @:, { text: "Delete", click: deleteCycle, name: "customD" }
+                            }
+                        @:], title: "Actions", width: 100}
+                    }
+            ]
+        }).data("kendoGrid");
+    });
+
+
+</script>
+   @* @(Html.Kendo().Sortable()
+    .For("#gdSchCycles")
+    .Filter("table > tbody > tr")
+    .Cursor("move")
+    .HintHandler("__noHint")
+    .PlaceholderHandler("sortPlaceholder")
+    .ContainerSelector("#gdSchCycles tbody")
+    .Events(events => events.Change("onSortChange"))
+)*@
+}

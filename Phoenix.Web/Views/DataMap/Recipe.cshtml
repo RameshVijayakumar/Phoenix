@@ -1,0 +1,355 @@
+﻿@{
+    ViewBag.Title = "Recipe Mapping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+
+    @Html.Partial("_PageHeader", (string)ViewBag.Title)
+    <div class="row">
+       <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+            <input  style="width:400px" id="menuSelection"/>
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 offset2">
+            <a class="btn btn-default btn-xs pull-right" id="btnAutoMap"><i class='glyphicon glyphicon-resize-small glyphicon-white'></i> Auto Map</a>
+        </div>
+    </div>
+
+    @Html.Partial("_ItemTabGroup")
+
+</div> 
+
+<div id="windowManualDataMap" class="k-content">
+    <div id="manualMapHeader"></div>
+    <div id="gridRecipeData" style="font-size:75%" class="resizable-grid"></div>
+    <div class="form-actions">
+        Currently Mapped Recipe&nbsp;<span class="label label-default" id="lblRecipeName">none</span>
+        Selected Recipe&nbsp;<span class="label label-info" id="lblODSRecipeName">none</span>
+        <br /><br />
+        <input type="hidden" id="inpItemId" value="0">
+        <input type="hidden" id="inpODSRecipeId" value="0">
+        <button type="button" class="btn btn-default btn-primary" id="btnRecipeSelOK">Map selected item</button>
+        <button type="button" class="btn btn-default"  id="btnRecipeSelCancel">Cancel</button>
+    </div>
+</div>
+
+@section scripts{
+<script type="text/javascript" src="~/Scripts/mapdatacommon.js"></script>
+<script type="text/javascript">
+    var selectedMenuId = -1;
+    var renderedItemGrids = new Array();
+
+    $(function () {
+        setMainStatus();
+
+        $('#tabItemGroup a:first').tab('show');
+
+
+        $("#menuSelection").kendoDropDownList({
+            dataTextField: "Name",
+            dataValueField: "MenuId",
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "/MenuData/GetMenuList",
+                        data: { 'breakcache': new Date().getTime() },
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8"
+                    }
+                }
+            },
+            select: function (e) {
+                var dataItem = this.dataItem(e.item.index());
+                selectedMenuId = dataItem.MenuId;
+   
+                // get the currently selected tab's grid id
+                var gridElement = $('#tabItemGroup .active a').attr('href');
+                renderItemGrid(gridElement, renderedItemGrids.length==0?false:true);
+
+                renderODSRecipeGrid();
+            }
+        });
+
+
+
+
+
+        $("#windowManualDataMap").kendoWindow({
+            width: "800px",
+            height: "700px",
+            title: "Operational Recipe Data",
+            modal: true,
+            animation: false,
+            visible: false,
+
+        });
+
+        $("#btnAutoMap").bind("click", function () {
+
+            setMainStatus();
+
+            $.ajax({
+                url: '/datamap/RecipeAutoMap',
+                type: 'POST',
+                success: function (data, textStatus, jqXHR) {
+
+                    setMainStatus(data.status, data.message);
+
+                    if (data.status == true) {
+                        // rebind all grids
+                        renderItemGrid('#1A', true);
+                        renderItemGrid('#1B', true);
+                        renderItemGrid('#1C', true);
+                        renderItemGrid('#1D', true);
+                    }
+                },
+                error: function (xhr) {
+                    setMainStatus(false, "Internal server error");
+                },
+                beforeSend: function () {
+                    $('#btnAutoMap').attr("disabled", "disabled");
+                    setMainStatus("info", "Please wait...");
+                },
+                complete: function () {
+                    $('#btnAutoMap').removeAttr("disabled");
+                }
+            });
+        });
+
+
+        $("#btnRecipeSelOK").bind("click", function () {
+
+            
+            var selItemId = $('#inpItemId').val();
+            var selRecipeId = $('#inpODSRecipeId').val();
+
+            if (selItemId == null || selRecipeId == null) {
+                return;
+            }
+
+            setMainStatus();
+
+            // save to database
+            $.ajax({
+                url: '/datamap/RecipeManualMap?itemId=' + selItemId + '&operationalDataId=' + selRecipeId,
+                type: 'POST',
+                success: function (data, textStatus, jqXHR) {
+
+                    setMainStatus(data.status, data.message);
+
+                    if (data.status == true) {
+
+                        // rebind all grids
+                        renderItemGrid('#1A', true);
+                        renderItemGrid('#1B', true);
+                        renderItemGrid('#1C', true);
+                        renderItemGrid('#1D', true);
+                    }
+
+                },
+                error: function (xhr) {
+                    setMainStatus(false, "Internal server error");
+                },
+                beforeSend: function () {
+                    setMainStatus("info", "Please wait...");
+                },
+            });
+
+            $("#windowManualDataMap").data("kendoWindow").close();
+        });
+
+        $("#btnRecipeSelCancel").bind("click", function () {
+            $("#windowManualDataMap").data("kendoWindow").close();
+        });
+
+
+    });
+    function tabSelected(gridElement) {
+
+        // render grid if it was not already rendered
+        renderItemGrid(gridElement);
+    }
+
+    function renderItemGrid(callingElement, isRebind) {
+        if (!selectedMenuId && selectedMenuId > 0) {
+            setMainStatus(false, "Please select a Menu");
+            retrun;
+        }
+
+        if (!callingElement) {
+            return;
+        }
+
+        // determine parentGroupId from element name
+        var gridDetails = getGridDetails(callingElement);
+
+        if ($.inArray(gridDetails.itemParentGroupId, renderedItemGrids) == -1) {
+
+            if (isRebind == true) {
+                // cannot rebind  if not rendered
+                return;
+            }
+            // not found in array means not rendered
+            renderedItemGrids.push(gridDetails.itemParentGroupId);
+
+            // render
+            gridDetails.gridElement.kendoGrid({
+                dataSource: {
+                    type: "json",
+                    transport: {
+                        read: {
+                            url: "/datamap/MenuItemsForRecipe",
+                            dataType: "json",
+                            type: "GET",
+                            contentType: "application/json; charset=utf-8",
+                            data: { 'parentGroupId': gridDetails.itemParentGroupId, "MenuId": selectedMenuId }
+                        }
+                    },
+                    pageSize: 100
+                },
+                groupable: true,
+                sortable: true,
+                filterable: true,
+                pageable: {
+                    refresh: true,
+                    pageSizes: [100, 150, 200]
+                },
+                selectable: 'row',
+                columns: [
+                    { field: "Id", width: 1, title: "Id", hidden: true },
+                    { field: "ParentName", width: 100, title: "Category / Collection" },
+                    { field: "ItemName", width: 90, title: "Item Name" },
+                    { field: "DisplayName", width: 140, title: "Display Name" },
+                    { field: "MapStatus", width: 60, title: "Map Status", template: '# if(MapStatus == "Manual") { #<img src="/Content/img/accept.png" /> ${ MapStatus }# } else if (MapStatus == "Auto") { #<img src="/Content/img/tick.png" /> ${ MapStatus }# } else { #<img src="/Content/img/exclamation.png" /> ${ MapStatus }# } #' },
+                    //{ field: "MapStatus", width: 60, title: "Map Status", template: '# if(MapStatus == "2") { #<img src="/Content/img/accept.png" /> Manual# } else if (MapStatus == "1") { #<img src="/Content/img/tick.png" /> Auto# } else { #<img src="/Content/img/exclamation.png" /> UnMapped# } #' },
+                    { field: "RecipeName", width: 100, title: "Recipe" },
+                    { command: [{ text: "Map", click: manualMapBtnClick, name: "map" }, { text: "Unmap", click: manualUnmapBtnClick, name: "unmap" }], width: "100px", title: "Action" }
+                ],
+                dataBound: function (e) {
+                    var grid = e.sender;
+                    var data = grid.dataSource.data();
+                    $.each(data, function (i, row) {
+
+                        if (row.MapStatus == "UnMapped") {
+                            // hide command button named "unmap"
+                            $('[data-uid=' + row.uid + ']').find('.k-grid-unmap').hide();
+                        }
+                    })
+                }
+            }).data("kendoGrid");
+        }
+        else {
+            // id already in the array, nothing to render - check if rebind required
+            if (isRebind == true) {
+
+                var ds = gridDetails.gridElement.data("kendoGrid").dataSource;;
+                ds.transport.options.read.data.parentGroupId = gridDetails.itemParentGroupId;
+                ds.transport.options.read.data.MenuId = selectedMenuId;
+                ds.read();
+            }
+        }
+    }
+    function renderODSRecipeGrid() {
+
+        if ($('#gridRecipeData').html() != '') {
+            return;
+        }
+
+        $("#gridRecipeData").kendoGrid({
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "/datamap/OperationalRecipeData",
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8"
+                    }
+                },
+            },
+            height: 430,
+            pageable: {
+                refresh: true,
+                info: true
+            },
+            groupable: true,
+            sortable: true,
+            filterable: true,
+            resizable: true,
+            selectable: 'row',
+            columns: [
+            { field: "RecipeId", width: 1, title: "Id", hidden: true },
+            { field: "Name", width: 90, title: "Recipe Name" },
+            { field: "StarChefGuid", width: 90, title: "StarChef Guid" },
+            { field: "Cost", width: 40, title: "Cost", format: "{0:c}" },
+            //{ field: "LastUpdated", width: 50, title: "LastUpdated", format: "{0:dd/MM/yyyy}" },
+            ],
+            change: function () {
+                var selectedRow = this.select();
+                var rowData = this.dataItem(selectedRow);
+                $('#lblODSRecipeName').text(rowData.Name);
+                $('#inpODSRecipeId').val(rowData.RecipeId);
+
+            }
+        }).data("kendoGrid");
+
+    }
+
+    function manualMapBtnClick(e) {
+
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        // fill popup window controls
+        $('#inpItemId').val(dataItem.Id);
+        $('#lblRecipeName').text(dataItem.RecipeName);
+        $('#manualMapHeader').html('<p>Select a Recipe for item <b>' + dataItem.ItemName + '</b>...</p>');
+        // open the window
+        $("#windowManualDataMap").data("kendoWindow").center().open();
+    }
+    function manualUnmapBtnClick(e) {
+
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var result = confirm('Delete recipe mapping for ' + dataItem.ItemName + ' ?');
+        if (result == true) {
+
+            setMainStatus();
+
+            // save to database
+            $.ajax({
+                url: '/datamap/RecipeManualUnmap?itemId=' + dataItem.Id,
+                type: 'POST',
+                success: function (data, textStatus, jqXHR) {
+
+                    setMainStatus(data.status, data.message);
+
+                    if (data.status == true) {
+
+                        // rebind all grids
+                        renderItemGrid('#1A', true);
+                        renderItemGrid('#1B', true);
+                        renderItemGrid('#1C', true);
+                        renderItemGrid('#1D', true);
+                    }
+
+                },
+                error: function (xhr) {
+                    setMainStatus(false, "Internal server error");
+                },
+                beforeSend: function () {
+                    setMainStatus("info", "Please wait...");
+                },
+            });
+        }
+
+    }
+
+    ////Resize Kendo TreeView And/Or Kendo Grid
+    $(window).load(function () { triggerResize(130, 250, 90); });
+    $(window).resize(function () { triggerResize(130, 250, 90); });
+</script>    
+}

@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "Schedule Browser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <h4>Schedule Browser</h4>
+            <!--Sidebar content-->
+            <div id="treeview" style="font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <!--Body content-->
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+            {
+                <h4>
+                    <a class="btn btn-default" id="btnCreateSch"><i class="glyphicon glyphicon-th-large"></i>&nbsp;Create Schedule</a>
+                </h4>
+            }
+            <div>Note: click a schedule, drag & drop your mouse to re-prioritize that schedule</div>
+            <div id="gridSchedule" style="font-size: 75%;" class="resizable-grid active"></div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/scheduleselect")
+    <script>
+    var selectedId = 0;
+    var selectedNodeType = 0;
+    $("#gridSchedule").kendoGrid({
+        dataSource: {
+            type: "json",
+            transport: {
+                read: {
+                    cache: false,
+                    url: "/Schedule/GetScheduleList",
+                    data: { 'netId': selectedId, 'breakcache': new Date().getTime() },
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8"
+                }
+            },
+            pageSize: __gridDefaultPageSize
+        },
+        dataBound: onGridSchDataBound,
+        sortable: true,
+        pageable: {
+            refresh: true,
+            pageSizes: __gridPageSizes
+        },
+        columns: [
+            { field: "SchName", width: 100, title: "Schedule Name" },
+            //{ field: "Priority", width: 50, title: "Priority" },
+            { field: "StartDate", width: 50, title: "Start Date", type: 'date', format: "{0:MM/dd/yyyy hh:mm tt}" },
+            { field: "EndDate", width: 50, title: "End Date", type: 'date', format: "{0:MM/dd/yyyy hh:mm tt}" },
+            { field: "LastUpdatedDate", width: 50, title: "Last Updated Date", type: 'date', format: "{0:MM/dd/yyyy hh:mm tt}" }
+            , {
+                command: [
+                  { text: "Open", click: showSchDetails, name: "edit" }
+                  @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                        {
+                            @:, { text: "Copy", click: copySch, name: "copy" }, { text: "Disable", click: disableSch, name: "disable" }, { text: "Enable", click: enableSch, name: "customEnable" }
+                            if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                            {
+                                @:, { text: "Delete", click: deleteSch, name: "delete" }
+                            }
+                            @:, { text: "Revert", click: revertSch, name: "revert" }
+                       }
+                ], width: 90, title: "Actions"
+            }
+        ]
+    }).data("kendoGrid");
+
+
+    </script>
+ @(Html.Kendo().Sortable()
+    .For("#gridSchedule")
+    .Filter("table > tbody > tr")
+    .Cursor("move")
+    .HintHandler("__noHint")
+    .PlaceholderHandler("sortPlaceholder")
+    .ContainerSelector("#gridSchedule tbody")
+    .Events(events => events.Change("onScheduleSortChange"))
+)
+}

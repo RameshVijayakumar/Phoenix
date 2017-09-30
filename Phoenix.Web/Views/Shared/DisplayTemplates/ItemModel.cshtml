@@ -1,0 +1,157 @@
+﻿@model Phoenix.Web.Models.ItemModel
+
+<fieldset>
+    <legend>@Html.DisplayFor(model => model.ItemName)</legend>
+    <form class="form-horizontal">
+        <table class="table table-striped table-hover table-bordered">
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.ItemName)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.ItemName)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.BasePLU)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.BasePLU)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.AlternatePLU)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.AlternatePLU)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.DisplayName)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.DisplayName)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.DeepLinkId)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.DeepLinkId)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>Descriptions</label>
+                </td>
+                <td>
+                    <label class="col-xs-6">
+                        <ul id="ItemDescriptionList" class="list-unstyled">
+                            @if (string.IsNullOrWhiteSpace(Model.DisplayDescription) == false)
+                            {
+                                <li>@Html.DisplayFor(model => model.DisplayDescription)</li>
+                            }
+                            @foreach (var itemDesc in Model.ItemDescriptions)
+                            {
+                                <li>@itemDesc.Description</li>
+                            }
+                        </ul>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>POS Items</label>
+                </td>
+                <td>
+                    <label class="col-xs-6">
+                        <ul id="POSItemList" class="list-unstyled">
+                            @foreach (var masterPOSItem in Model.POSDatas)
+                            {
+                                var pluText = masterPOSItem.PLU.HasValue ? " - " + masterPOSItem.PLU : "";
+                                var altText = string.IsNullOrWhiteSpace(masterPOSItem.AlternatePLU) ? "" : " - " + masterPOSItem.AlternatePLU;
+                                var basePriceText = masterPOSItem.BasePrice.HasValue ? " - $" + masterPOSItem.BasePrice.Value.ToString("0.00") : "";
+                                <li>@masterPOSItem.POSItemName@pluText@altText@basePriceText</li>
+                            }
+                        </ul>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayNameFor(model => model.Feeds)</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>@Html.DisplayFor(model => model.Feeds)</label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class=col-xs-6>Images</label>
+                </td>
+                <td>
+                    <label class=col-xs-6>
+                        <span id="divImages">
+                            @foreach (var asset in Model.Assets)
+                            {
+                                <img src="@Model.cDN@asset.ThumbNailBlobName" width="80" height="60" />
+                            }
+                        </span>
+                    </label>
+                </td>
+            </tr>
+            @*<tr>
+                    <td>
+                        <label class=col-xs-6>@Html.DisplayNameFor(model => model.BasePrice)</label>
+                    </td>
+                    <td>
+                        <label class=col-xs-6>$@Html.DisplayFor(model => model.BasePrice)</label>
+                    </td>
+                </tr>*@
+            @*<tr>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsModifier)&nbsp;@Html.DisplayNameFor(model => model.IsModifier)</label>
+                    </td>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsAlcohol)&nbsp;@Html.DisplayNameFor(model => model.IsAlcohol)</label>
+                    </td>
+                </tr>*@
+
+            @*<tr>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsIncluded)&nbsp;@Html.DisplayNameFor(model => model.IsIncluded)</label>
+                    </td>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsSendHierarchy)&nbsp;@Html.DisplayNameFor(model => model.IsSendHierarchy)</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsModifier)&nbsp;@Html.DisplayNameFor(model => model.IsModifier)</label>
+                    </td>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsCombo)&nbsp;@Html.DisplayNameFor(model => model.IsCombo)</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsAlcohol)&nbsp;@Html.DisplayNameFor(model => model.IsAlcohol)</label>
+                    </td>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.QuickOrder)&nbsp;@Html.DisplayNameFor(model => model.QuickOrder)</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="checkbox-inline control-label-left">@Html.DisplayFor(model => model.IsTopLevel)&nbsp;@Html.DisplayNameFor(model => model.IsTopLevel)</label>
+                    </td>
+                    <td></td>
+                </tr>*@
+        </table>
+
+    </form>
+</fieldset>

@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "Load Test";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3 pull-left">
+            <h3>Load Test</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            Include Networks
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            @Html.TextBox("txtIncNetworkIds",string.Empty, new { Class = "col-xs-6 col-sm-6 col-md-6 col-lg-6" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            Exclude Networks
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            @Html.TextBox("txtExcNetworkIds",string.Empty, new { Class = "col-xs-6 col-sm-6 col-md-6 col-lg-6" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            Include Menu Names
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            @Html.TextBox("txtIncMenus",string.Empty, new { Class = "col-xs-6 col-sm-6 col-md-6 col-lg-6" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            Exclude Menu Names
+        </div>
+        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+            @Html.TextBox("txtExcMenus",string.Empty, new { Class = "col-xs-6 col-sm-6 col-md-6 col-lg-6" })
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <a class="btn btn-default" id="btnOverrideMenus">Override</a>
+            <div style="margin-top: 50px;">
+                <h4 class="title">Console log
+                </h4>
+                <div id="console" class="console"></div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript" src="~/Scripts/console.min.js"></script>
+    <script type="text/javascript">
+        
+        $(function () {
+
+        });
+
+        function getcurrentDateString()
+        {
+            var currentdate = new Date(); 
+            var datetime = "Date: " + currentdate.getDate() + "/"
+                            + (currentdate.getMonth()+1)  + "/" 
+                            + currentdate.getFullYear() + "  "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+
+            return datetime;
+        }
+
+        $("#btnOverrideMenus").off('click').bind("click", function () {
+            var completedNetworks = new Array();
+            var excludedNetworks = new Array(); 
+            var includedNetworks = new Array();
+            var includedMenus = new Array();
+            var excludedMenus = new Array();
+            var strExcIds = '';
+            var strIncIds = '';
+            var strMnuNames = '';
+            var strIncMnuNames = '';
+            if ($('#txtExcNetworkIds').val() != '') {
+                excludedNetworks = $('#txtExcNetworkIds').val().split(',');
+                strExcIds = JSON.stringify(excludedNetworks);
+            }
+            if ($('#txtIncNetworkIds').val() != '') {
+                includedNetworks = $('#txtIncNetworkIds').val().split(',');
+                strIncIds = JSON.stringify(includedNetworks);
+            }
+            if ($('#txtExcMenus').val() != '') {
+                excludedMenus = $('#txtExcMenus').val().split(',');
+                strMnuNames = JSON.stringify(excludedMenus);
+            }
+            if ($('#txtIncMenus').val() != '') {
+                includedMenus = $('#txtIncMenus').val().split(',');
+                strIncMnuNames = JSON.stringify(includedMenus);
+            }
+            var menuNwpairs = 0;
+            var completedMnuNWpairs = 0;
+            kendoConsole.log("LOAD TEST START..." + getcurrentDateString());
+            $.ajax({
+                url: '/LoadTest/GetAllNetworks',
+                type: 'GET',
+                dataType: 'json',
+                data: { 'id': null, 'excludedNetworkIds': strExcIds, 'includedNetworkIds': strIncIds },
+                success: function (data, textStatus, jqXHR) {
+                    if (data.status) {
+                        kendoConsole.log("Retrieved All Networks :: ");
+                        if (data.networks.length > 0) {
+                            //For Each Network
+                            $.each(data.networks, function (i, network) {
+                                $.ajax({
+                                    url: '/Menu/GetMenuList',
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    data: { 'netId': network.NetworkObjectId, 'breakcache': new Date().getTime() },
+                                    success: function (menus, textStatus, jqXHR) {
+                                        menuNwpairs = menuNwpairs + menus.length;
+                                        kendoConsole.log("Retrieved Menus for Network :: " + network.Name);
+                                        //For each Menu in Network
+                                        $.each(menus, function (i, menu) {
+                                            //If menu is not excluded
+                                            if ($.inArray(menu.InternalName, excludedMenus) == -1) {
+
+                                                if ((includedMenus.length == 0) || (includedMenus.length != 0 && $.inArray(menu.InternalName, includedMenus) != -1)) {
+                                                    $.ajax({
+                                                        url: '/LoadTest/OverrideMenuinNetwork',
+                                                        type: 'GET',
+                                                        dataType: 'json',
+                                                        data: { 'menuId': menu.MenuId, 'networkId': network.NetworkObjectId, 'breakcache': new Date().getTime() },
+                                                        beforeSend: function (e) {
+                                                            kendoConsole.log("Overriding Menu :: " + menu.InternalName + " in Network :: " + network.Name + " is process...");
+                                                        },
+                                                        success: function (data, textStatus, jqXHR) {
+                                                            completedMnuNWpairs = completedMnuNWpairs + 1;
+                                                            if (data.status) {
+                                                                if (data.result) {
+                                                                    kendoConsole.log("Overriden Menu :: " + menu.InternalName + " in Network :: " + network.Name + ". PROCESS COMPLETE ");
+                                                                    completedNetworks.push(network.NetworkObjectId);
+                                                                }
+                                                                else {
+                                                                    kendoConsole.log("Already Overriden Menu :: " + menu.InternalName + " in Network :: " + network.Name);
+                                                                }
+                                                            }
+                                                            else {
+                                                                kendoConsole.log("Error overriding Menu :: " + menu.InternalName + " in Network :: " + network.Name + " ErrorMessage :: " + data.errMsg);
+                                                            }
+                                                            if (i == menus.length) {
+                                                                kendoConsole.log("Overriding Alls Menus in Network :: " + network.Name + " complete");
+                                                            }
+                                                            if (completedMnuNWpairs === menuNwpairs) {
+                                                                kendoConsole.log("LOAD TEST COMPLETE..." + getcurrentDateString());
+                                                            }
+                                                        },
+                                                        error: function (xhr) {
+
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    menuNwpairs--;
+                                                }
+                                            }
+                                            else {
+                                                menuNwpairs--;
+                                            }
+                                        });
+                                    },
+                                    error: function (xhr) {
+
+                                    }
+                                });
+                                if (i == 5 && includedNetworks.length == 0) {
+                                    kendoConsole.log("Manually Stopped LOAD TEST because of more networks... " + getcurrentDateString());
+                                    return false;
+                                }
+                            });
+                        }
+                    }
+                    else {
+                        kendoConsole.log("Error Retrieving All Networks :: " + data.errMsg);
+                    }
+                },
+                error: function (xhr) {
+
+                }
+            });
+        });
+    </script>
+}
+<style>
+.console div
+{
+    background-image: url("sprite.png");
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+* html .console div
+{
+    background-image: url("sprite_ie6.png");
+}
+.console
+{
+    background-color: #FFF;
+    border: 1px solid #CCC;
+    color: #333;
+    font: 11px Consolas, Monaco, "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
+    height: 200px;
+    margin: 1.4em 0 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    text-align: left;
+}
+.console .count
+{
+    background-color: #91AFEF;
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    border-radius: 15px;
+    color: #FFFFFF;
+    font-size: 10px;
+    margin-left: 5px;
+    padding: 2px 6px 2px 5px;
+}
+.console div
+{
+    background-position: 6px -95px;
+    border-bottom: 1px solid #DDD;
+    padding: 5px 5px 4px 24px;
+}
+.console .error
+{
+    background-position: 6px -135px;
+}
+</style>

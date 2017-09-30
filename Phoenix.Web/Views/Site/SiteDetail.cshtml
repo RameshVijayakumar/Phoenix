@@ -1,0 +1,51 @@
+﻿@model Phoenix.Web.Models.SiteModel 
+<div class="k-edit-label">
+    @Html.LabelFor(m => m.NetworkObject.Name) @Html.HiddenFor(m => m.NetworkObject.Name) @Html.HiddenFor(m => m.NetworkObject.ParentNetworkObjectId) @Html.HiddenFor(m => m.StoreNumber)
+</div>
+<div data-container-for="NetworkObject.Name" class="k-edit-field">
+    ${NetworkObject.Name} 
+</div>
+
+<div class="k-edit-label">
+    @Html.Label("Address")
+</div>
+<div data-container-for="Address1" class="k-edit-field control-label-left">
+    ${Address1} 
+        ${Address2} 
+        ${City} ${State} ${Zip} 
+</div>
+
+<div class="k-edit-label">
+    @Html.LabelFor(m => m.Phone)
+</div>
+<div data-container-for="Phone" class="k-edit-field">
+    @Html.TextBoxFor(m => m.Phone, new { Class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12"})
+    @Html.ValidationMessageFor(m => m.Phone)
+</div>
+<div class="k-edit-label">
+    @Html.LabelFor(m => m.Latitude)
+</div>
+<div data-container-for="Latitude" class="k-edit-field">
+    @Html.TextBoxFor(m => m.Latitude, new { Class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12"})
+    @Html.ValidationMessageFor(m => m.Latitude)
+</div>
+<div class="k-edit-label">
+    @Html.LabelFor(m => m.Longitude)
+</div>
+<div data-container-for="Longitude" class="k-edit-field">
+    @Html.TextBoxFor(m => m.Longitude, new { Class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12"})
+    @Html.ValidationMessageFor(m => m.Longitude)
+</div>
+
+<div class="k-edit-label">
+    @Html.LabelFor(m => m.SiteTimeZone)
+    <input type="hidden" id="SiteTimeZone.Id" />
+</div>
+<div data-container-for="SiteTimeZone.Id" class="k-edit-field">
+    <input id="timezones"
+        data-bind="value: SiteTimeZone.Id"
+        data-value-field="Value"
+        data-text-field="Text"
+        data-role="dropdownlist" required="required" style="width: 400px;" />
+    @Html.ValidationMessageFor(m => m.SiteTimeZone.Id)
+</div>

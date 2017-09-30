@@ -1,0 +1,468 @@
+﻿@model Phoenix.Web.Models.SpecialNoticeModel
+@{
+    ViewBag.Title = "Menu Features";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <h4><span id="tvTreeSelName"></span></h4>
+            <!--Sidebar content-->
+            <div id="tvNetworkObjects" style="overflow-y: auto; font-size: 75%;" class="resizable-tree"></div>
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="tabbable tabs-top div-with-marign-5" id="tbFeature">
+                <ul class="nav nav-tabs" id="tabFeatureGroup">
+                    <li><a href="#1A" data-toggle="tab" class="tabElement" onclick="javascript: featureTabSelected('#1A'); return false;">Special Notice</a></li>
+                    <li><a href="#1B" data-toggle="tab" class="tabElement" onclick="javascript: featureTabSelected('#1B'); return false;">Modifier Flag</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane" id="1A">
+                        <div class="row row-top-bottom-margin">
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    <span id="tvSelNameTags"></span>&nbsp;&nbsp;&nbsp;             
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    <span class="text-warning" id="AddTagMsg"></span>
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                    {
+                                        <a class="btn btn-default btn-sm pull-right" id="btnNoticeDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a>                                               
+                                    }
+                                </div>
+                                <div id="operationStatus" class="col-xs-6 col-sm-6 col-md-6 col-lg-6 statusdiv">
+                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div id="gridSpecialNotice" style="font-size: 75%;" class="resizable-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="1B">
+                        <div class="row row-top-bottom-margin">
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    <span id="tvSelNameMFlags"></span>&nbsp;&nbsp;&nbsp;             
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                    {
+                                        <a class="btn btn-default btn-sm pull-right" id="btnFlagDelete"><i class='glyphicon glyphicon-remove'></i>&nbsp;Delete Selected</a>                                               
+                                    }
+                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                @*<div id="gridModifierFlag" style="font-size: 75%;"></div>*@
+                                @(Html.Kendo()
+                                    .Grid<Phoenix.Web.Models.ModifierFlagModel>()
+                                    .Name("gridModifierFlag").HtmlAttributes(new { style = "font-size: 75%;", Class = "resizable-grid" })
+                                    .Columns(columns =>
+                                        {
+                                            columns.Bound(p => p.ModifierFlagId).ClientTemplate("<input type='checkbox' value=#=ModifierFlagId# onclick='onCheckboxClick(this)'/>").Title("Select")
+                                                                                .HeaderTemplate("<input type='checkbox' title='Select/Unselect All' onclick='onCheckUncheckAllClick(this)' />")
+                                                                                .Sortable(false).Filterable(false).Width(25);
+                                            columns.Bound(p => p.Name).Width(100);
+                                            columns.Bound(p => p.Code).Width(100).EditorTemplateName("PositiveNumber").Format("{0:0}");
+                                            if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                                            {
+                                                columns.Command(command =>
+                                                {
+                                                    command.Edit().CancelText("Cancel").UpdateText("Save");
+                                                    if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                                    {
+                                                        command.Custom("Delete").Click("deleteFlag");
+                                                    }
+                                                }).Width(100).Title("Actions");
+                                            }
+                                        })
+                                   .ToolBar(toolbar => 
+                                       {
+
+                                           if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                                           {
+                                               toolbar.Create().Text("Add New Modifier Flag");
+                                           }
+                                       })
+                                   .Editable(editable => editable.Mode(GridEditMode.InLine))
+                                   .Pageable(pageable => pageable
+                                            .Refresh(true)
+                                            .PageSizes(new int[] { 100, 150, 200 })
+                                            .ButtonCount(5))
+                                    .Sortable().Filterable().Scrollable()
+                                   .DataSource(dataSource => dataSource
+                                       .Ajax()
+                                       .Batch(false).PageSize(150)
+                                       .Model(model =>
+                                           {
+                                               model.Id(p => p.ModifierFlagId);
+                                               model.Field(p => p.ModifierFlagId).Editable(false);
+                                               model.Field(p => p.Name);
+                                               model.Field(p => p.Code);
+                                               model.Field(p => p.NetworkObjectId).DefaultValue(0);
+                                           })
+                                           .Read(read => read.Action("GetModifierFlagList", "ModifierFlag").Data("mfAdditionalData"))
+                                           .Update(update => update.Action("SaveModifierFlag", "ModifierFlag").Data("mfAdditionalData"))
+                                           .Create(create => create.Action("SaveModifierFlag", "ModifierFlag").Data("mfAdditionalData"))
+                                           .Events(events =>
+                                           {
+                                               events.Error("mfError");
+                                               events.RequestEnd("mfRequestEnd");
+                                           })
+                                       )
+                                       .Events(e =>
+                                       {
+                                           e.DataBound("gridDataBound");
+                                           e.Edit("mfEdit");
+                                       })
+                                )
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    
+    <script type="text/javascript" src="~/Scripts/menufeatures.js"></script>
+    @Scripts.Render("~/bundles/treeviewcontrol")
+
+    <script id="popup_editor" type="text/x-kendo-template">
+			<div class="k-edit-label">
+			    <label for="NoticeName">Notice Name</label>
+			</div>
+			<div data-container-for="NoticeName" class="k-edit-field">
+            <input type="text" class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12" name="NoticeName" required="required" data-bind="value:NoticeName">
+                @Html.ValidationMessageFor(m => m.NoticeName)
+            </div>
+			<div class="k-edit-label">
+				<label for="NoticeText">Notice Text</label>
+			</div>
+			<div data-container-for="NoticeText" class="k-edit-field">
+                <textarea rows="3" cols="150" name="NoticeText" required="required" data-bind="value:NoticeText" class="k-input k-textbox col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                </textarea>@Html.ValidationMessageFor(m => m.NoticeText)
+            </div>
+            <div class="k-edit-label">
+			</div>
+			<div data-container-for="DefaultIncludeInMenu" class="k-edit-field">
+                <input type='checkbox' name='DefaultIncludeInMenu' /> Include In Menu
+                @Html.ValidationMessageFor(m => m.DefaultIncludeInMenu)
+            </div>
+    </script>
+
+    <script type="text/kendo-template" id="message">
+        <div class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error" style="margin: 0.5em; display: block; " data-for="#=field#" data-valmsg-for="#=field#" >
+        <span class="k-icon k-warning"> </span>#=message#<div class="k-callout k-callout-n"></div></div>
+    </script>
+
+    <script>
+    var validationMessageTmpl = kendo.template($("#message").html());
+    var _isValidTreeNodeSelected = false;
+    _expansionSequence = sessionStorage.ExpansionSequence_SpecialNotice != undefined && sessionStorage.ExpansionSequence_SpecialNotice != "" ? sessionStorage.ExpansionSequence_SpecialNotice.split(',') : new Array();
+    _initialExpansionAfterSelectionItemType = _initialExpansionItemType = NetworkObjectType.Root; //This is the @@Model.ItemType
+
+    $(document).ready(function () {
+        setStatus($('#operationStatus'));
+
+        // defines DataSource of kendoTreeView: tvNetworkObjects
+        var _root = new kendo.data.HierarchicalDataSource({
+            transport: {
+                read: {
+                    cache: false,
+                    url: "/site/BrandLeveTree",
+                    dataType: "json",
+                    data: { 'networkObjectType': _initialExpansionItemType }
+                }
+            },
+            schema: {
+                model: {
+                    id: "Id",
+                    hasChildren: "HasChildren",
+                    expanded: "expanded",
+                    parentId: "parentId",
+                    ItemType: "ItemType"
+                }
+            }
+        });
+
+        // defines kendoTreeView: tvNetworkObjects
+        _tree = $("#tvNetworkObjects").kendoTreeView({
+            dataSource: _root,
+            dataTextField: "Name",
+            dataImageUrlField: "Image",
+            loadOnDemand: true,
+            dataBound: function (e) {
+                handleTreeDataBound(e);
+            },
+            select: function (e) {
+                handleTreeNodeSelection(e.node);
+            }
+        });
+
+        treeViewCtrl = $("#tvNetworkObjects").data("kendoTreeView");
+    });
+
+    $(function () {
+        var tabToselect = getUrlQueryStringVars()["t"];
+        if (tabToselect == null || tabToselect == undefined) {
+            highlightMenubar("menu", "spl");
+            // open a tab initially
+            $('#tabFeatureGroup a:first').tab('show');
+            featureTabSelected('#1A');
+        }
+        else {
+            highlightMenubar("menu", "mflag");
+            $('#tabFeatureGroup a[href=#' + tabToselect + ']').tab('show');
+            featureTabSelected('#' + tabToselect);
+        }
+
+    });
+
+    function featureTabSelected(tabId) {
+        $(".resizable-grid").removeClass("active").addClass('inactive');
+        $(tabId).find(".resizable-grid").removeClass("inactive").addClass('active');
+
+        if (tabId == '#1A') {
+            $('#tvTreeSelName').html("Special Notice");
+            initSpecialNoticeTab();
+        }
+        else if (tabId == '#1B') {
+            $('#tvTreeSelName').html("Modifier Flags");
+            //initModifierFlagTab();
+            refreshFlags();
+        }
+    }
+    function initSpecialNoticeTab() {
+
+
+        // defines function to add hover effect and remove it when row is clicked
+        addExtraStylingToGrid = function (e) {
+            $("table.k-focusable tbody tr").hover(function () {
+                $(this).toggleClass("k-state-hover");
+            });
+
+            this.thead.find(":checkbox")[0].checked = false;
+
+            //Disable 'Add New Special Notice' button
+            if (!_isValidTreeNodeSelected) {
+                $(".k-grid-add :first").addClass('disabledAnchor').addClass("k-state-disabled");
+                $(".k-grid-add :first").attr('disabled', 'disabled');
+            }
+
+            //Remove icon from the row-level grid command buttons
+            $("a.k-grid-edit").children().removeClass("k-icon");
+
+            triggerResizeGrid();
+        };
+        // defines KendoGrid: gridSpecialNotice
+        $("#gridSpecialNotice").kendoGrid({
+            edit: function (e) {
+                e.container.data("kendoWindow").title("Special Notes");
+                window.setTimeout(function () {
+                    $(".k-edit-form-container").parent().width(650).height(220).data("kendoWindow").center();
+                }, 50);
+                e.container.data('kendoWindow').bind('activate', function (e) {
+                    $('[name="NoticeName"]').select();
+                })
+
+                if (e.model.isNew()) {
+                    $('[name="DefaultIncludeInMenu"]').attr('checked','checked');
+                }
+            },
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        cache: false,
+                        url: "/SpecialNotice/GetSpecialNoticeList",
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        data: { 'networkObjectId': selectedId }
+                    },
+                    create: {
+                        url: "/SpecialNotice/SaveSpecialNotice",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    update: {
+                        url: "/SpecialNotice/SaveSpecialNotice",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    parameterMap: function (model, operation) {
+                        if (operation !== "read") {
+                            var result = {};
+                            for (var member in model) {
+                                if (operation == "create") {
+                                    if (member == "NoticeId") {
+                                        result[member] = 0;
+                                        continue;
+                                    }
+                                    else if (member == "NetworkObjectId") {
+                                        result[member] = selectedId;
+                                        continue;
+                                    }
+                                }
+                                result[member] = model[member];
+                            }
+                            return result;
+                        }
+                        else {
+                            return model
+                        }
+                    }
+                },
+                pageSize: __gridDefaultPageSize,
+                schema: {
+                    errors: "Errors",
+                    model:
+                    {
+                        id: "NoticeId",
+                        fields:
+                        {
+                            NoticeId: { editable: false, nullable: true },
+                            NoticeName: { editable: true,
+                                validation:
+                                    {
+                                        required: true,
+                                        maxlength: function (input) {
+                                            if (input.is("[name=NoticeText]") && input.val().length > 1024) {
+                                                input.attr("data-maxlength-msg", "Max length is 1024");
+                                                return false;
+                                            }
+                                            if (input.is("[name=NoticeName]") && input.val().length > 128) {
+                                                input.attr("data-maxlength-msg", "Max length is 128");
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                    }
+                            },
+                            NoticeText: { editable: true },
+                            NetworkObjectId: { editable: false },
+                            LastUpdated: { editable: false },
+                            IsLinkedToMenu: { editable: false, visible: false, type: "boolean" }
+                        }
+                    }
+                },
+                error: function (e) {
+                    if (e.errors) {
+                        grid = $("#gridSpecialNotice").data("kendoGrid");
+                        grid.one("dataBinding", function (e) {
+                            e.preventDefault();   // cancel grid rebind if error occurs
+                        });
+
+                        for (var error in e.errors) {
+                            showMessage(grid.editable.element, error, e.errors[error].errors);
+                        }
+                    }
+                },
+                requestEnd: spRequestEnd                    
+            },
+            sortable: true,
+            filterable: true,
+            @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                          {
+                @:toolbar: [{ name: "create", text: "Add New Special Notice" }],
+                                        }
+            pageable: {
+                refresh: true,
+                pageSizes: __gridPageSizes
+            },
+            dataBound: gridDataBound,
+            editable: {
+                mode: "popup",
+                template: kendo.template($("#popup_editor").html())
+            },
+            columns: [{ field: "NoticeId", title: "Select", width: 10, template: "<input type='checkbox' value=#=NoticeId# onclick='onCheckboxClick(this)' />", headerTemplate: "<input type='checkbox' title='Select/Unselect All' onclick='onCheckUncheckAllClick(this)' />", sortable: false, filterable: false },
+                         { field: "NoticeName", width: 50, title: "Notice Name" },
+                         { field: "NoticeText", width: 100, title: "Notice Text" },
+                         { field: "DefaultIncludeInMenu", width: 30, title: "Include In Menu" },
+                         { field: "IsLinkedToMenu", width: 0, hidden: true }
+                 @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator") || User.IsInRole("Editor"))
+                    {
+                        @:, { command: [
+                        @: { text: { update: "Save", cancel: "Cancel" }, name: "edit" }
+                        if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                        {
+                            @: , { text: "Delete", click: deleteNotice, name: "deleteNotice" }
+                        }
+                        @: ], width: 40, title: "Actions" }
+                    }
+                   ]
+             }).data("kendoGrid");
+        }
+
+        function showMessage(container, name, errors) {
+            //add the validation message to the form
+
+            container.find("[data-valmsg-for=" + name + "]")
+                .replaceWith($(validationMessageTmpl({ field: name, message: errors[0] })))
+        }
+
+        function restoreSelectionSub() {
+            try {
+                selectedId = sessionStorage.SelectedTreeNodeId_SpecialNotice;
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+
+        function storeTreeNodeExpansionNSelectionSub(selectedNode) {
+            try {
+                sessionStorage.ExpansionSequence_SpecialNotice = _expansionSequence;
+                sessionStorage.SelectedTreeNodeId_SpecialNotice = selectedId;
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+
+        function handleTreeDataBoundSub(e) {
+            //Do Nothing
+        }
+
+        function handleTreeNodeSelectionSub(selectedNode) {
+            try {
+                var callingElement = $('#tabFeatureGroup .active a').attr('href');
+                refreshSelectedTab(callingElement);
+
+                _networkObjectType = treeViewCtrl.dataItem(selectedNode).ItemType;
+                _isValidTreeNodeSelected = false;
+                if (_networkObjectType != undefined && _networkObjectType == NetworkObjectType.Brand) {
+                    //Enable 'Add New Special Notice' button
+                    $(".k-grid-add :first").removeClass('disabledAnchor').removeClass("k-state-disabled");
+                    $(".k-grid-add :first").removeAttr('disabled', 'disabled');
+                    _isValidTreeNodeSelected = true;
+                }
+
+                $('#tvSelNameTags').html('Special Notices under <b>' + selectedName + '</b>');
+                setStatus($('#operationStatus'));
+            }
+            catch (e) {
+                alert(e);
+            }
+        }
+
+        //Resize Kendo TreeView And/Or Kendo Grid
+        $(window).load(function () { triggerResizeTree(); });
+        $(window).resize(function () { triggerResize(); });
+
+    </script>
+
+    <style>
+        div.k-edit-buttons {
+            border: none !important;
+        }
+
+        .field-validation-error {
+            color: #e80c4d;
+            font-weight: normal !important;
+        }
+    </style>
+
+}

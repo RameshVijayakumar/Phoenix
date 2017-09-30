@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "Item Management";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <h4>Master Items</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+            <!--Sidebar content-->
+            <div id="treeView" style="font-size: 75%;" class="resizable-tree"></div>
+            @*<div id="tv2"  style="font-size:75%;"></div>*@
+        </div>
+        <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <span id="tvSelNameItems"></span>&nbsp;&nbsp;&nbsp;
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                {
+                    <a class="btn btn-default pull-right" id="btnCreateItem"><i class="glyphicon glyphicon-th-large"></i>Create Item</a>
+                }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div id="gridItemInfo" style="font-size: 75%;" class="resizable-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="windowItemObjects" style="display: none;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6" style="font-size: 180%;" id="InternalName"></div>
+                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 form-group pull-right">
+                    <span id="spNavigation"><a href="#" class='btn btn-default btn-sm pull-right' onclick="getNextPrevRow(1)" tabindex="3"><i class="glyphicon glyphicon-arrow-right"></i></a>
+                    <a href="#" class='btn btn-default btn-sm pull-right leftpadding' onclick="getNextPrevRow(-1)" tabindex="2"><i class="glyphicon glyphicon-arrow-left"></i></a></span>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                    {
+                        <input class="btn btn-default btn-primary btn-sm pull-right leftpadding" type="button" value="Edit" id="btnEditItem" tabindex="1" />
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <table class="table table-striped table-hover table-bordered table-condensed">
+                        <tr>
+                            <td class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                                <label class="control-label-left">Display Name</label>
+                            </td>
+                            <td class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+                                <label class="control-label-left"><span id="ItemName"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Internal Name</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><span id="InternalName2"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Deep Link ID</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><span id="DeepLinkId"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Description(s)</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><ul id="ItemDescriptionList" class="list-unstyled" /></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">POS Item(s)</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><ul id="ItemPOSList" class="list-unstyled" /></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Feeds</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><span id="Feeds"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Images</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><span id="divImages"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label class="control-label-left">Icons</label>
+                            </td>
+                            <td>
+                                <label class="control-label-left"><span id="divIcons"></span></label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                                <label class="control-label-left">
+                                    <input type="checkbox" disabled id="itemmodifier" />&nbsp;Is Modifier</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                                <label class="control-label-left">
+                                    <input type="checkbox" disabled id="itemIsAlcohol" />&nbsp;Is Alcohol</label>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*<div class="form-group">
+            <label class="control-label">Start Date</label>
+            <div class="controls">
+                <label class="control-label-left"><span id="ItemStartDate" class="input-mini" /></label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">End Date</label>
+            <div class="controls">
+                <label class="control-label-left"><span id="ItemEndDate" class="input-mini" /></label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label">Modifier ?</label>
+            <div class="controls">
+                <label class="control-label-left">
+                    <input type="checkbox" id="ItemModifier" disabled="disabled" /></label>
+            </div>
+        </div>*@
+</div>
+
+@section scripts{
+    @Scripts.Render("~/bundles/treeviewcontrol")
+    @Scripts.Render("~/bundles/masteritemselect")
+    <script>
+    var grid = $("#gridItemInfo").kendoGrid({
+        dataSource: {
+            type: "json",
+            transport: {
+                read: {
+                    url: "/Item/GetItemList",
+                    data: { 'brandId': selectedId, 'parentId': null, 'excludeNoPLUItems': false, 'prntType': null, 'netId': null, 'excludeDeactivated': false, 'includeItemExtraProperties': false, 'breakcache': new Date().getTime() },
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+
+                },
+            },
+            schema: {
+                data: "data", // records are returned in the "data" field of the response
+                total: "total" // total number of records is in the "total" field of the response
+            },
+            serverSorting: true,
+            sort: { field: "DisplayName", dir: "asc" },
+            serverFiltering: true,
+            serverPaging: true,
+            pageSize: __gridDefaultPageSize
+        },
+        dataBound: onDataBound,
+        sortable: true,
+        filterable: {
+            operators: {
+                string: { contains: "Contains", doesnotcontain: "Does Not Contain", eq: "Is Equal To", neq: "Is Not Equal To", startswith: "Starts With", endswith: "Ends With" }
+            }
+        },
+        pageable: {
+            refresh: true,
+            pageSizes: __gridPageSizes
+        },
+        selectable: 'row',
+        filterMenuInit : kendoFilterWithEmptyFieldInit,
+        columns: [
+            { field: "DisplayName", width: 80, type: "string", title: "Display Name" },
+            { field: "ItemName", width: 80, type: "string", title: "Internal Name" },
+            { field: "DeepLinkId", width: 80, type: "string", title: "Link Id" },
+            //{ field: "BasePLU", width: 40, type: "number", title: "PLU", format: "{0:0}",filterable: {
+            //    ui: function (element) {
+            //        element.kendoNumericTextBox({
+            //            format: "{0:0}",
+            //            min:0
+            //        });
+            //    }
+            //}
+            //},
+            //{ field: "AlternatePLU", width: 40, type: "string", title: "Alternate ID" },
+            {
+                command: [{ text: "View", click: viewMasterItem, name: "view" }
+                @if (User.IsInRole("Administrator") || User.IsInRole("SuperAdministrator"))
+                  {
+                        @:, { text: "Edit", click: editMasterItem, name: "edit" }
+                        @:, { text: "Deactivate", click: deactivateMasterItem, name: "customDeactive" }, { text: "Activate", click: activateMasterItem, name: "customActive" }
+                  }
+                    ], width: "100px", title: "Actions"
+                }
+            ]
+        })
+            .data("kendoGrid");
+
+        //Reload the filter n sort options
+        var state = JSON.parse(sessionStorage.MasterItemListGridState);
+        if (state) {
+            if (state.filter) {
+                parseFilterDates(state.filter, grid.dataSource.options.schema.model.fields);
+            }
+            state.page = 1;
+            //grid.dataSource.page(1);
+            grid.dataSource.query(state);
+        }
+        else {
+            grid.dataSource.page(1);
+            //grid.dataSource.read();
+        }
+    </script>
+}

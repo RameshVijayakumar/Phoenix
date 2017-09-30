@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ServiceConfiguration serviceName="Phoenix.API.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2015-04.2.6">
+  <Role name="Phoenix.API">
+    <Instances count="1" />
+    <ConfigurationSettings>
+      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=zphoenixtest;AccountKey=QZ237bqSkD42u4bLT72c96Jrw+7gJM/Xm21Jg6jNT7hbGNnCbD2A653RRVPDTQlZPy9c+06rwIj7u81Z2h2G0A==" />
+    </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="zioskconnect" thumbprint="A3EDF9FD4257E4A53B5A071E75904B439CC66786" thumbprintAlgorithm="sha1" />
+    </Certificates>
+  </Role>
+</ServiceConfiguration>
